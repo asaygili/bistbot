@@ -1,0 +1,1272 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#050a0f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="BISTBot">
+<meta name="mobile-web-app-capable" content="yes">
+<title>BIST Borsa Robotu</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;700;900&display=swap');
+
+:root {
+  --bg:      #050a0f;
+  --panel:   #0a1520;
+  --card:    #0d1e2e;
+  --border:  #0f2030;
+  --border2: #1a3a55;
+  --accent:  #00d4ff;
+  --green:   #00ff88;
+  --red:     #ff3355;
+  --yellow:  #ffcc00;
+  --dim:     #2a5570;
+  --text:    #c8e8f0;
+  --mono:    'Share Tech Mono', monospace;
+  --head:    'Orbitron', sans-serif;
+  --body:    'Rajdhani', sans-serif;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top:    env(safe-area-inset-top, 0px);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+html { height:100%; overflow:hidden; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--body);
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  width: 100%;
+  overscroll-behavior: none;
+}
+
+/* ── GRİD ARKAPLAN ── */
+body::before {
+  content:'';
+  position:fixed; inset:0; z-index:0;
+  background-image:
+    linear-gradient(rgba(0,212,255,.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,212,255,.025) 1px, transparent 1px);
+  background-size: 32px 32px;
+  pointer-events:none;
+}
+
+/* ── STATUS BAR SPACER ── */
+.statusbar-spacer {
+  height: var(--safe-top);
+  background: var(--bg);
+  position: relative; z-index:10;
+}
+
+/* ── TOP HEADER ── */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: rgba(5,10,15,.95);
+  border-bottom: 1px solid var(--border);
+  position: relative; z-index: 10;
+  backdrop-filter: blur(10px);
+}
+
+.logo {
+  font-family: var(--head);
+  font-size: 18px; font-weight:900;
+  color: var(--accent);
+  letter-spacing: 3px;
+  text-shadow: 0 0 15px rgba(0,212,255,.4);
+}
+.logo b { color: var(--green); }
+
+.topbar-right { display:flex; align-items:center; gap:10px; }
+
+.cd-wrap {
+  display:flex; align-items:center; gap:5px;
+  font-family: var(--mono); font-size:11px; color:var(--dim);
+}
+.cd-ring { width:28px; height:28px; transform:rotate(-90deg); }
+.cd-bg   { fill:none; stroke:var(--border); stroke-width:3; }
+.cd-arc  { fill:none; stroke:var(--accent); stroke-width:3;
+           stroke-linecap:round; stroke-dasharray:75.4;
+           stroke-dashoffset:0; transition:stroke-dashoffset .9s linear; }
+#cdNum { color:var(--accent); font-size:10px; min-width:22px; }
+
+.refresh-btn {
+  width:36px; height:36px;
+  background: rgba(0,212,255,.08);
+  border: 1px solid rgba(0,212,255,.3);
+  border-radius:8px;
+  color: var(--accent); font-size:18px;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; transition:all .2s;
+  -webkit-tap-highlight-color:transparent;
+}
+.refresh-btn:active { background:rgba(0,212,255,.2); transform:scale(.92); }
+.refresh-btn.spin { animation: spinA .6s linear infinite; }
+@keyframes spinA { to { transform:rotate(360deg); } }
+
+/* ── PULL TO REFRESH ── */
+.ptr {
+  position: absolute; top:0; left:0; right:0;
+  height:0; overflow:hidden;
+  display:flex; align-items:center; justify-content:center;
+  background: var(--panel);
+  z-index:5; transition:height .2s;
+  font-family:var(--mono); font-size:11px; color:var(--dim);
+}
+.ptr.active { height:48px; }
+
+/* ── SCROLL CONTAINER ── */
+.scroll-area {
+  flex:1; overflow-y:auto; overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  position:relative; z-index:2;
+  padding-bottom: calc(70px + var(--safe-bottom));
+}
+
+/* ── ÖZET KARTLAR ── */
+.sum-row {
+  display:grid;
+  grid-template-columns: repeat(3,1fr);
+  gap:8px;
+  padding:12px 12px 6px;
+}
+.scard {
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:10px 8px;
+  text-align:center;
+  position:relative; overflow:hidden;
+}
+.scard::before {
+  content:'';
+  position:absolute; bottom:0; left:0; right:0;
+  height:2px;
+}
+.scard.g::before { background:var(--green); }
+.scard.r::before { background:var(--red); }
+.scard.y::before { background:var(--yellow); }
+.scard.a::before { background:var(--accent); }
+.scard-num {
+  font-family:var(--mono); font-size:22px; font-weight:700; line-height:1;
+}
+.scard-num.g { color:var(--green); }
+.scard-num.r { color:var(--red); }
+.scard-num.y { color:var(--yellow); }
+.scard-num.a { color:var(--accent); }
+.scard-lbl {
+  font-family:var(--head); font-size:7px;
+  letter-spacing:1.5px; color:var(--dim);
+  margin-top:3px;
+}
+
+/* ── PIYASA DURUMU ── */
+.market-bar {
+  margin:0 12px 8px;
+  padding:8px 12px;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:10px;
+  display:flex; justify-content:space-between; align-items:center;
+}
+.mbar-lbl { font-family:var(--head); font-size:8px; letter-spacing:2px; color:var(--dim); }
+.mbar-val { font-family:var(--mono); font-size:13px; }
+
+/* ── FİLTRE ÇUBUĞU ── */
+.filter-row {
+  display:flex; gap:6px;
+  padding:0 12px 10px;
+  overflow-x:auto; scrollbar-width:none;
+}
+.filter-row::-webkit-scrollbar { display:none; }
+.ftab {
+  font-family:var(--head); font-size:9px; font-weight:700;
+  letter-spacing:1.5px; padding:6px 14px;
+  background:transparent; border:1px solid var(--border);
+  color:var(--dim); border-radius:20px;
+  white-space:nowrap; cursor:pointer;
+  transition:all .2s; flex-shrink:0;
+}
+.ftab.on { background:rgba(0,212,255,.1); border-color:var(--accent); color:var(--accent); }
+
+/* ── HİSSE KARTLARI ── */
+.cards-list { padding:0 12px; display:flex; flex-direction:column; gap:8px; }
+
+.hcard {
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:12px;
+  overflow:hidden;
+  transition:transform .15s, box-shadow .15s;
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+  position:relative;
+}
+.hcard:active { transform:scale(.98); }
+.hcard.selected { border-color:var(--accent); box-shadow:0 0 12px rgba(0,212,255,.2); }
+
+.hcard-accent { height:3px; width:100%; }
+.hcard.GA .hcard-accent { background:linear-gradient(90deg,var(--green),#00aa55); }
+.hcard.AL .hcard-accent { background:linear-gradient(90deg,#00cc66,#00aa44); }
+.hcard.TT .hcard-accent { background:linear-gradient(90deg,var(--yellow),#aa8800); }
+.hcard.ST .hcard-accent { background:linear-gradient(90deg,#ff6680,#cc2244); }
+.hcard.GS .hcard-accent { background:linear-gradient(90deg,var(--red),#aa0022); }
+.hcard.LD .hcard-accent { background:var(--border); }
+
+.hcard-body { padding:12px 14px; }
+
+.hcard-top {
+  display:flex; justify-content:space-between; align-items:flex-start;
+  margin-bottom:8px;
+}
+.hcard-sym {
+  font-family:var(--head); font-size:16px; font-weight:900;
+  color:var(--accent); letter-spacing:1px;
+}
+.hcard-name { font-size:11px; color:var(--dim); margin-top:1px; }
+
+.badge {
+  font-family:var(--head); font-size:9px; font-weight:700;
+  letter-spacing:1px; padding:4px 10px;
+  border-radius:4px; white-space:nowrap;
+}
+.bGA { background:rgba(0,255,136,.15); color:var(--green); border:1px solid rgba(0,255,136,.4); }
+.bAL { background:rgba(0,204,102,.1);  color:#00cc66;      border:1px solid rgba(0,204,102,.3); }
+.bTT { background:rgba(255,204,0,.1);  color:var(--yellow);border:1px solid rgba(255,204,0,.3); }
+.bST { background:rgba(255,51,85,.08); color:#ff6680;      border:1px solid rgba(255,51,85,.3); }
+.bGS { background:rgba(255,51,85,.15); color:var(--red);   border:1px solid rgba(255,51,85,.4); }
+.bLD { background:rgba(42,85,112,.2);  color:var(--dim);   border:1px solid var(--border); }
+
+.hcard-mid {
+  display:flex; justify-content:space-between; align-items:center;
+  margin-bottom:10px;
+}
+.hcard-price {
+  font-family:var(--mono); font-size:20px; font-weight:700; color:#fff;
+}
+.hcard-changes { text-align:right; }
+.chg { font-family:var(--mono); font-size:11px; display:block; }
+.chg.p { color:var(--green); }
+.chg.n { color:var(--red); }
+.chg.z { color:var(--dim); }
+
+/* Skor barları */
+.skor-grid {
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:6px;
+}
+.skor-row { display:flex; flex-direction:column; gap:2px; }
+.skor-lbl { font-family:var(--head); font-size:7px; letter-spacing:1.5px; color:var(--dim); }
+.skor-track {
+  height:4px; background:var(--border); border-radius:2px;
+  position:relative; overflow:visible;
+}
+.skor-fill {
+  height:100%; border-radius:2px;
+  transition:width .5s, background .5s;
+  position:absolute; top:0;
+}
+.skor-mid-line {
+  position:absolute; left:50%; top:-2px;
+  width:1px; height:8px; background:var(--dim);
+}
+.skor-val {
+  font-family:var(--mono); font-size:9px;
+  text-align:right; color:var(--dim);
+}
+
+/* Yükleniyor kartı */
+.hcard-loading {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:12px; padding:16px 14px;
+  display:flex; align-items:center; gap:12px;
+}
+.loader-sym { font-family:var(--head); font-size:16px; color:var(--dim); }
+.loader-bar {
+  flex:1; height:4px; background:var(--border); border-radius:2px;
+  overflow:hidden; position:relative;
+}
+.loader-bar::after {
+  content:''; position:absolute; top:0; left:-40%;
+  width:40%; height:100%;
+  background:linear-gradient(90deg, transparent, var(--accent), transparent);
+  animation:shimmer 1.2s ease-in-out infinite;
+}
+@keyframes shimmer { to { left:140%; } }
+
+/* ── DETAY SAYFASI (BOTTOM SHEET) ── */
+#sheet-overlay {
+  position:fixed; inset:0; z-index:50;
+  background:rgba(0,0,0,.6);
+  display:none; backdrop-filter:blur(4px);
+}
+#sheet-overlay.show { display:block; }
+
+#bottom-sheet {
+  position:fixed; bottom:0; left:0; right:0; z-index:51;
+  background:var(--panel);
+  border-top:1px solid var(--border2);
+  border-radius:20px 20px 0 0;
+  max-height:90vh;
+  transform:translateY(100%);
+  transition:transform .35s cubic-bezier(.32,.72,0,1);
+  overflow:hidden; display:flex; flex-direction:column;
+}
+#bottom-sheet.open { transform:translateY(0); }
+
+.sheet-handle {
+  width:36px; height:4px; background:var(--border2);
+  border-radius:2px; margin:12px auto 4px;
+  flex-shrink:0;
+}
+.sheet-scroll { overflow-y:auto; flex:1; padding:0 16px 40px; }
+
+.sheet-header {
+  display:flex; justify-content:space-between; align-items:flex-start;
+  padding:8px 0 14px;
+  border-bottom:1px solid var(--border);
+  margin-bottom:14px;
+}
+.sheet-sym {
+  font-family:var(--head); font-size:22px; font-weight:900;
+  color:var(--accent); text-shadow:0 0 10px rgba(0,212,255,.3);
+}
+.sheet-name { font-size:12px; color:var(--dim); margin-top:2px; }
+.sheet-close {
+  font-size:20px; background:none; border:none;
+  color:var(--dim); cursor:pointer; padding:4px;
+  transition:color .2s;
+}
+.sheet-close:active { color:var(--red); }
+
+/* Fiyat blokları */
+.fblocks { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:14px; }
+.fblock {
+  background:rgba(0,212,255,.03);
+  border:1px solid var(--border);
+  border-radius:8px; padding:10px; text-align:center;
+}
+.fb-lbl { font-family:var(--head); font-size:7px; letter-spacing:2px; color:var(--dim); }
+.fb-val { font-family:var(--mono); font-size:14px; margin-top:3px; }
+
+/* Bölüm başlığı */
+.stitle {
+  font-family:var(--head); font-size:8px; font-weight:700;
+  letter-spacing:3px; color:var(--dim);
+  border-bottom:1px solid var(--border);
+  padding-bottom:5px; margin:14px 0 10px;
+}
+
+/* Satır */
+.srow {
+  display:flex; justify-content:space-between;
+  padding:6px 0; border-bottom:1px solid rgba(15,32,48,.8);
+  font-size:12px;
+}
+.sk { color:var(--dim); }
+.sv { font-family:var(--mono); color:var(--text); text-align:right; }
+
+/* Duygu metre */
+.duygu-meter { margin:8px 0; }
+.dm-labels {
+  display:flex; justify-content:space-between;
+  font-family:var(--head); font-size:8px;
+  color:var(--dim); margin-bottom:3px;
+}
+.dm-bar {
+  height:8px; background:var(--border);
+  border-radius:4px; position:relative; overflow:hidden;
+}
+.dm-fill { height:100%; position:absolute; border-radius:4px; transition:width .5s; }
+.dm-mid  { position:absolute; left:50%; top:0; width:2px; height:100%; background:var(--border2); }
+.dm-skor {
+  font-family:var(--mono); font-size:11px;
+  text-align:center; margin-top:4px;
+}
+
+/* Sinyal listesi */
+.sig-item { padding:6px 0; border-bottom:1px solid rgba(15,32,48,.8); }
+.sig-top { display:flex; justify-content:space-between; align-items:center; }
+.sig-name { font-size:12px; color:var(--text); }
+.sig-yon { font-family:var(--head); font-size:9px; font-weight:700; letter-spacing:1px; }
+.sig-yon.AL  { color:var(--green); }
+.sig-yon.SAT { color:var(--red); }
+.sig-yon.NTR { color:var(--dim); }
+.sig-ac { font-family:var(--mono); font-size:9px; color:var(--dim); margin-top:1px; }
+
+/* Haber öğesi */
+.haber-item { padding:8px 0; border-bottom:1px solid var(--border); }
+.haber-baslik { font-size:12px; color:var(--text); line-height:1.4; margin-bottom:3px; }
+.haber-meta { font-family:var(--mono); font-size:9px; color:var(--dim); display:flex; gap:8px; }
+
+/* ML olasılık barları */
+.prob-bar-row { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+.prob-lbl { font-family:var(--head); font-size:9px; width:40px; }
+.prob-track { flex:1; height:6px; background:var(--border); border-radius:3px; overflow:hidden; }
+.prob-fill  { height:100%; border-radius:3px; transition:width .5s; }
+.prob-pct   { font-family:var(--mono); font-size:10px; width:36px; text-align:right; }
+
+/* ── ALT NAVİGASYON ── */
+.bottomnav {
+  position:fixed; bottom:0; left:0; right:0; z-index:20;
+  background:rgba(8,14,21,.97);
+  border-top:1px solid var(--border);
+  display:flex;
+  padding-bottom: var(--safe-bottom);
+  backdrop-filter:blur(10px);
+}
+.bnav-item {
+  flex:1; display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  padding:10px 0;
+  cursor:pointer; transition:all .2s;
+  -webkit-tap-highlight-color:transparent;
+}
+.bnav-item:active { opacity:.6; }
+.bnav-icon { font-size:20px; line-height:1; margin-bottom:2px; }
+.bnav-lbl {
+  font-family:var(--head); font-size:7px;
+  letter-spacing:1.5px; color:var(--dim);
+  transition:color .2s;
+}
+.bnav-item.on .bnav-lbl { color:var(--accent); }
+.bnav-item.on .bnav-icon { filter:drop-shadow(0 0 6px var(--accent)); }
+
+/* ── AYARLAR EKRANI ── */
+#page-ayarlar {
+  display:none; flex-direction:column;
+  padding:16px; gap:12px;
+}
+#page-ayarlar.show { display:flex; }
+
+.ayar-card {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:12px; padding:14px 16px;
+}
+.ayar-title {
+  font-family:var(--head); font-size:10px;
+  letter-spacing:2px; color:var(--accent);
+  margin-bottom:12px;
+}
+.ayar-row {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:8px 0; border-bottom:1px solid var(--border);
+  font-size:13px;
+}
+.ayar-row:last-child { border-bottom:none; }
+.ayar-lbl { color:var(--text); }
+
+/* Toggle switch */
+.toggle {
+  width:44px; height:24px; background:var(--border);
+  border-radius:12px; position:relative;
+  cursor:pointer; transition:background .3s;
+}
+.toggle.on { background:rgba(0,212,255,.3); }
+.toggle::after {
+  content:''; position:absolute; top:2px; left:2px;
+  width:20px; height:20px; background:var(--dim);
+  border-radius:50%; transition:all .3s;
+}
+.toggle.on::after { left:22px; background:var(--accent); }
+
+/* Hisse listesi düzenleyici */
+.hisse-chips {
+  display:flex; flex-wrap:wrap; gap:6px; margin-top:8px;
+}
+.chip {
+  font-family:var(--mono); font-size:11px;
+  padding:4px 10px 4px 8px;
+  background:rgba(0,212,255,.07); border:1px solid rgba(0,212,255,.2);
+  border-radius:20px; color:var(--accent);
+  display:flex; align-items:center; gap:5px;
+  cursor:pointer;
+}
+.chip-x { color:var(--red); font-size:13px; }
+.chip-ekle {
+  font-family:var(--mono); font-size:11px;
+  padding:4px 12px;
+  background:rgba(0,255,136,.07); border:1px dashed rgba(0,255,136,.3);
+  border-radius:20px; color:var(--green);
+  cursor:pointer;
+}
+#yeniHisseInput {
+  background:var(--border); border:none; outline:none;
+  color:var(--text); font-family:var(--mono); font-size:13px;
+  padding:8px 12px; border-radius:8px; width:100%;
+  margin-top:8px; text-transform:uppercase;
+}
+
+/* ── YÜKLEME EKRANI ── */
+#loader {
+  position:fixed; inset:0; z-index:100;
+  background:var(--bg);
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap:20px;
+  transition:opacity .5s;
+}
+#loader.hide { opacity:0; pointer-events:none; }
+.ll {
+  font-family:var(--head); font-size:28px; font-weight:900;
+  color:var(--accent); letter-spacing:4px;
+  text-shadow:0 0 25px rgba(0,212,255,.5);
+  animation:glow 2s ease-in-out infinite;
+}
+@keyframes glow {
+  0%,100%{text-shadow:0 0 20px rgba(0,212,255,.4);}
+  50%{text-shadow:0 0 40px rgba(0,212,255,.8),0 0 60px rgba(0,212,255,.3);}
+}
+.lb-wrap { width:220px; height:3px; background:var(--border); border-radius:2px; }
+.lb { height:100%; background:var(--accent); width:0; border-radius:2px; transition:width .3s; }
+.lt { font-family:var(--mono); font-size:10px; color:var(--dim); text-align:center; }
+
+/* ── TOAST ── */
+#toast {
+  position:fixed; bottom:80px; left:50%; transform:translateX(-50%) translateY(20px);
+  background:rgba(0,212,255,.15); border:1px solid rgba(0,212,255,.3);
+  color:var(--accent); font-family:var(--mono); font-size:12px;
+  padding:8px 16px; border-radius:20px;
+  opacity:0; transition:all .3s; pointer-events:none;
+  backdrop-filter:blur(10px); white-space:nowrap; z-index:60;
+}
+#toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+/* ── ÇEVRIMDIŞI BANNER ── */
+#offline-banner {
+  display:none; background:rgba(255,204,0,.1);
+  border-bottom:1px solid rgba(255,204,0,.3);
+  padding:6px 16px; font-family:var(--mono); font-size:10px;
+  color:var(--yellow); text-align:center; z-index:9; position:relative;
+}
+#offline-banner.show { display:block; }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width:3px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--border2); border-radius:2px; }
+</style>
+</head>
+<body>
+
+<div id="loader">
+  <div class="ll">BIST<b style="color:var(--green)">BOT</b></div>
+  <div style="font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:3px;margin-bottom:4px">v2.0 MOBİL</div>
+  <div class="lb-wrap"><div class="lb" id="lb"></div></div>
+  <div class="lt" id="lt">Başlatılıyor...</div>
+</div>
+
+<div id="toast"></div>
+<div id="offline-banner" class="show">📡 Çevrimdışı — Son veriler gösteriliyor</div>
+
+<div class="statusbar-spacer"></div>
+
+<!-- Top Bar -->
+<div class="topbar">
+  <div>
+    <div class="logo">BIST<b>BOT</b></div>
+    <div style="font-family:var(--mono);font-size:8px;color:var(--dim);letter-spacing:1.5px">MOBİL ANALİZ</div>
+  </div>
+  <div class="topbar-right">
+    <div class="cd-wrap">
+      <svg class="cd-ring" viewBox="0 0 28 28">
+        <circle class="cd-bg" cx="14" cy="14" r="12"/>
+        <circle class="cd-arc" id="cdArc" cx="14" cy="14" r="12"/>
+      </svg>
+      <span id="cdNum">60s</span>
+    </div>
+    <div class="refresh-btn" id="refreshBtn" onclick="manuelGuncelle()">⟳</div>
+  </div>
+</div>
+
+<!-- Scroll Area -->
+<div class="scroll-area" id="scrollArea">
+  <div class="ptr" id="ptr">⬇ Güncelle</div>
+
+  <!-- Özet Grid -->
+  <div class="sum-row">
+    <div class="scard g"><div class="scard-num g" id="sGA">—</div><div class="scard-lbl">GÜÇLÜ AL</div></div>
+    <div class="scard g"><div class="scard-num g" id="sAL">—</div><div class="scard-lbl">AL</div></div>
+    <div class="scard y"><div class="scard-num y" id="sTT">—</div><div class="scard-lbl">TUT</div></div>
+    <div class="scard r"><div class="scard-num r" id="sST">—</div><div class="scard-lbl">SAT</div></div>
+    <div class="scard r"><div class="scard-num r" id="sGS">—</div><div class="scard-lbl">GÜÇLÜ SAT</div></div>
+    <div class="scard a"><div class="scard-num a" id="sEI" style="font-size:14px;margin-top:2px">—</div><div class="scard-lbl">EN İYİ</div></div>
+  </div>
+
+  <!-- Piyasa Durumu -->
+  <div class="market-bar">
+    <div><div class="mbar-lbl">PİYASA DUYGУSU</div><div class="mbar-val" id="mPD">—</div></div>
+    <div style="text-align:right"><div class="mbar-lbl">SON GÜN.</div><div class="mbar-val" id="mSon" style="font-size:11px;color:var(--dim)">—</div></div>
+  </div>
+
+  <!-- Filtreler -->
+  <div class="filter-row">
+    <button class="ftab on" onclick="setTab('tumu',this)">TÜM</button>
+    <button class="ftab" onclick="setTab('al',this)">AL</button>
+    <button class="ftab" onclick="setTab('sat',this)">SAT</button>
+    <button class="ftab" onclick="setTab('tut',this)">TUT</button>
+    <button class="ftab" onclick="setTab('sort_bs',this)">↓ SKOR</button>
+    <button class="ftab" onclick="setTab('sort_rsi',this)">↓ RSI</button>
+  </div>
+
+  <!-- Kartlar -->
+  <div class="cards-list" id="cardsList"></div>
+
+  <div style="height:16px"></div>
+</div>
+
+<!-- Bottom Sheet -->
+<div id="sheet-overlay" onclick="closeSheet()"></div>
+<div id="bottom-sheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-scroll" id="sheetScroll"></div>
+</div>
+
+<!-- Bottom Nav -->
+<div class="bottomnav">
+  <div class="bnav-item on" id="nav-ana" onclick="navGit('ana')">
+    <div class="bnav-icon">📊</div>
+    <div class="bnav-lbl">ANALİZ</div>
+  </div>
+  <div class="bnav-item" id="nav-al" onclick="navGit('al')">
+    <div class="bnav-icon">🟢</div>
+    <div class="bnav-lbl">AL</div>
+  </div>
+  <div class="bnav-item" id="nav-sat" onclick="navGit('sat')">
+    <div class="bnav-icon">🔴</div>
+    <div class="bnav-lbl">SAT</div>
+  </div>
+  <div class="bnav-item" id="nav-ayarlar" onclick="navGit('ayarlar')">
+    <div class="bnav-icon">⚙️</div>
+    <div class="bnav-lbl">AYARLAR</div>
+  </div>
+</div>
+
+<!-- Ayarlar sayfası (scroll-area içine inject edilecek) -->
+<div id="page-ayarlar">
+  <div class="ayar-card">
+    <div class="ayar-title">GENEL AYARLAR</div>
+    <div class="ayar-row">
+      <span class="ayar-lbl">Otomatik Güncelleme</span>
+      <div class="toggle on" id="togOto" onclick="toggleAyar('oto')"></div>
+    </div>
+    <div class="ayar-row">
+      <span class="ayar-lbl">Güncelleme Sıklığı</span>
+      <span style="font-family:var(--mono);color:var(--accent);font-size:12px">60 sn</span>
+    </div>
+    <div class="ayar-row">
+      <span class="ayar-lbl">Bildirimler</span>
+      <div class="toggle" id="togBildirim" onclick="toggleAyar('bildirim')"></div>
+    </div>
+  </div>
+  <div class="ayar-card">
+    <div class="ayar-title">İZLEME LİSTESİ</div>
+    <div class="hisse-chips" id="hisseChips"></div>
+    <input type="text" id="yeniHisseInput" placeholder="Hisse kodu ekle (THYAO)" maxlength="10"
+           onkeydown="if(event.key==='Enter')hisseEkle()">
+    <button onclick="hisseEkle()" style="margin-top:8px;width:100%;padding:10px;background:rgba(0,255,136,.07);border:1px solid rgba(0,255,136,.3);color:var(--green);font-family:var(--head);font-size:10px;letter-spacing:2px;border-radius:8px;cursor:pointer">
+      + EKLE
+    </button>
+  </div>
+  <div class="ayar-card">
+    <div class="ayar-title">UYGULAMA HAKKINDA</div>
+    <div class="ayar-row"><span class="ayar-lbl">Versiyon</span><span style="font-family:var(--mono);color:var(--dim);font-size:12px">2.0.0 PWA</span></div>
+    <div class="ayar-row"><span class="ayar-lbl">Veri Kaynağı</span><span style="font-family:var(--mono);color:var(--dim);font-size:12px">Yahoo Finance</span></div>
+    <div class="ayar-row"><span class="ayar-lbl">Duygu</span><span style="font-family:var(--mono);color:var(--dim);font-size:12px">Momentum+RSS</span></div>
+    <div style="margin-top:12px;padding:10px;background:rgba(255,204,0,.05);border:1px solid rgba(255,204,0,.2);border-radius:8px;font-family:var(--mono);font-size:10px;color:#aa8800;line-height:1.5">
+      ⚠ Bu uygulama yatırım tavsiyesi vermez. Kararlar kişisel sorumluluğunuzdadır.
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+//  KONFİGÜRASYON
+// ═══════════════════════════════════════════════════════════
+let HISSELER = JSON.parse(localStorage.getItem('hisseler') || 'null') || [
+  "AKBNK","ARCLK","ASELS","BIMAS","EKGYO","EREGL","FROTO","GARAN",
+  "HALKB","ISCTR","KCHOL","KOZAL","KRDMD","MGROS","PETKM","PGSUS",
+  "SAHOL","SASA","SISE","SOKM","TCELL","THYAO","TKFEN","TOASO",
+  "TTKOM","TUPRS","VAKBN","VESTL","YKBNK","AKSA","ALFEN","ENKAI",
+  "GUBRF","LOGO","MAVI","BMSCH","BMSTL","MEKAG","ALTINS1"
+];
+const DUZELTME = {"ALTINS1":100};
+const CORS  = "https://api.allorigins.win/raw?url=";
+const YAHOO = "https://query1.finance.yahoo.com/v8/finance/chart/";
+const CD_MAX = 60;
+
+let veri={}, aktifTab='tumu', yukleniyor=false;
+let cdVal=CD_MAX, cdTimer, secilen=null;
+let ayarlar = JSON.parse(localStorage.getItem('ayarlar')||'{}');
+let otoGuncelle = ayarlar.oto !== false;
+
+// ── SERVICE WORKER ────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js')
+    .then(() => console.log('SW kayıtlı'))
+    .catch(e => console.warn('SW hatası:', e));
+}
+
+// ── ÇEVRIMDIŞI TESPİT ────────────────────────────────────
+function cevrimiciGuncelle() {
+  const banner = document.getElementById('offline-banner');
+  if (navigator.onLine) banner.classList.remove('show');
+  else banner.classList.add('show');
+}
+window.addEventListener('online',  cevrimiciGuncelle);
+window.addEventListener('offline', cevrimiciGuncelle);
+cevrimiciGuncelle();
+
+// ── GERİ SAYIM ────────────────────────────────────────────
+function cdBaslat() {
+  clearInterval(cdTimer);
+  cdVal = CD_MAX;
+  cdTimer = setInterval(() => {
+    cdVal--;
+    const el = document.getElementById('cdNum');
+    const arc = document.getElementById('cdArc');
+    if(el) el.textContent = cdVal + 's';
+    if(arc) arc.style.strokeDashoffset = 75.4 - (cdVal/CD_MAX)*75.4;
+    if(cdVal <= 0) { clearInterval(cdTimer); if(otoGuncelle&&!yukleniyor) tumYukle(); }
+  }, 1000);
+}
+
+// ── YAHOO VERİ ────────────────────────────────────────────
+async function fetchYahoo(sembol) {
+  const ticker = sembol + ".IS";
+  const url = YAHOO + ticker + "?interval=1d&range=2y";
+  const r = await fetch(CORS + encodeURIComponent(url), {signal: AbortSignal.timeout(12000)});
+  if(!r.ok) throw new Error("HTTP " + r.status);
+  const j = await r.json();
+  const res = j?.chart?.result?.[0];
+  if(!res) throw new Error("Boş yanıt");
+  const meta = res.meta, q = res.indicators.quote[0];
+  const duz = DUZELTME[sembol] || 1;
+  const rawF = meta.regularMarketPrice || 0;
+  const rawP = meta.previousClose || meta.chartPreviousClose || rawF;
+  return {
+    sembol,
+    fiyat: rawF*duz, onceki: rawP*duz,
+    kapanis: (q.close||[]).map(v=>v==null?null:v*duz),
+    yuksekler:(q.high||[]).map(v=>v==null?null:v*duz),
+    dusukler: (q.low||[]).map(v=>v==null?null:v*duz),
+    hacimler: q.volume||[],
+    aciklama: meta.longName||sembol,
+  };
+}
+
+// ── TEKNİK HESAPLAMALAR ───────────────────────────────────
+function sma(a,n){return a.map((_,i)=>i<n-1?null:a.slice(i-n+1,i+1).filter(v=>v!=null).reduce((s,x)=>s+x,0)/n);}
+function ema2(a,n){
+  const k=2/(n+1),r=new Array(a.length).fill(null);
+  let sum=0,cnt=0,fi=-1;
+  for(let i=0;i<a.length;i++){if(a[i]==null)continue;sum+=a[i];cnt++;if(cnt===n){fi=i;r[i]=sum/n;break;}}
+  if(fi<0)return r;
+  for(let i=fi+1;i<a.length;i++){r[i]=a[i]==null?r[i-1]:a[i]*k+(r[i-1]??a[i])*(1-k);}
+  return r;
+}
+function rsi14(a){
+  const r=new Array(a.length).fill(null);
+  for(let i=14;i<a.length;i++){
+    let g=0,l=0,c=0;
+    for(let j=i-13;j<=i;j++){if(a[j]==null||a[j-1]==null)continue;const d=a[j]-a[j-1];if(d>0)g+=d;else l-=d;c++;}
+    if(c>0){g/=c;l/=c;} r[i]=l===0?100:100-100/(1+g/l);
+  }
+  return r;
+}
+function macdCalc(a){
+  const e12=ema2(a,12),e26=ema2(a,26);
+  const hat=a.map((_,i)=>e12[i]!=null&&e26[i]!=null?e12[i]-e26[i]:null);
+  const s9=ema2(hat.map(v=>v??0),9);
+  return{hat,sig:s9,hist:hat.map((v,i)=>v!=null&&s9[i]!=null?v-s9[i]:null)};
+}
+function bollCalc(a,n=20){
+  const mid=sma(a,n),u=[],l=[];
+  for(let i=0;i<a.length;i++){
+    if(mid[i]==null){u.push(null);l.push(null);continue;}
+    const sl=a.slice(i-n+1,i+1).filter(v=>v!=null);
+    const std=Math.sqrt(sl.reduce((s,v)=>s+(v-mid[i])**2,0)/sl.length);
+    u.push(mid[i]+2*std);l.push(mid[i]-2*std);
+  }
+  return{mid,u,l};
+}
+function stochCalc(hi,lo,cl,k=14,d=3){
+  const kA=[],dA=[];
+  for(let i=0;i<cl.length;i++){
+    if(i<k-1){kA.push(null);continue;}
+    const hh=Math.max(...hi.slice(i-k+1,i+1).filter(v=>v!=null));
+    const ll=Math.min(...lo.slice(i-k+1,i+1).filter(v=>v!=null));
+    kA.push(hh===ll?50:100*(cl[i]-ll)/(hh-ll));
+  }
+  for(let i=0;i<kA.length;i++){
+    if(i<k+d-2){dA.push(null);continue;}
+    const sl=kA.slice(i-d+1,i+1).filter(v=>v!=null);
+    dA.push(sl.length?sl.reduce((s,v)=>s+v,0)/sl.length:null);
+  }
+  return{k:kA,d:dA};
+}
+function atrCalc(hi,lo,cl,n=14){
+  const tr=[null];
+  for(let i=1;i<cl.length;i++){
+    if(!cl[i]||!cl[i-1]){tr.push(null);continue;}
+    tr.push(Math.max((hi[i]||cl[i])-(lo[i]||cl[i]),Math.abs((hi[i]||cl[i])-cl[i-1]),Math.abs((lo[i]||cl[i])-cl[i-1])));
+  }
+  return sma(tr,n);
+}
+
+function teknikAnaliz(d){
+  const kap=d.kapanis,yuk=d.yuksekler,dus=d.dusukler,hac=d.hacimler;
+  const n=kap.length; if(n<55)return null;
+  const vl=(a,i=n-1)=>a[i]??0;
+  const s20=sma(kap,20),s50=sma(kap,50),s200=sma(kap,200);
+  const e9=ema2(kap,9),e21=ema2(kap,21);
+  const rsiA=rsi14(kap);
+  const{hat:mHat,sig:mSig,hist:mHist}=macdCalc(kap);
+  const{u:bbU,l:bbL}=bollCalc(kap);
+  const{k:stK,d:stD}=stochCalc(yuk,dus,kap);
+  const atrA=atrCalc(yuk,dus,kap);
+
+  const son=vl(kap),prev=vl(kap,n-2)||son;
+  const rsiS=vl(rsiA)||50;
+  const mH=vl(mHat),mS=vl(mSig),hiS=vl(mHist),hiP=vl(mHist,n-2);
+  const s20s=vl(s20),s50s=vl(s50),s200s=vl(s200);
+  const e9s=vl(e9),e21s=vl(e21),e9p=vl(e9,n-2),e21p=vl(e21,n-2);
+  const bbUs=vl(bbU)||son*1.05,bbLs=vl(bbL)||son*0.95;
+  const stKs=vl(stK)||50,stDs=vl(stD)||50,stKp=vl(stK,n-2)||50,stDp=vl(stD,n-2)||50;
+  const atrS=vl(atrA)||son*0.01;
+  const hacSon=hac[hac.length-1]||1;
+  const hacOrt=hac.slice(-20).filter(v=>v>0).reduce((a,b)=>a+b,0)/20||1;
+
+  const sig={};let alP=0,satP=0;
+  const S=(nm,y,w,ac)=>{sig[nm]={y,w,ac};if(y==='AL')alP+=w;else if(y==='SAT')satP+=w;};
+
+  if(rsiS<30)S('RSI Aşırı Satım','AL',2,`${rsiS.toFixed(1)}<30`);
+  else if(rsiS<45)S('RSI','AL',1,`${rsiS.toFixed(1)}<45`);
+  else if(rsiS>70)S('RSI Aşırı Alım','SAT',2,`${rsiS.toFixed(1)}>70`);
+  else if(rsiS>55)S('RSI','SAT',1,`${rsiS.toFixed(1)}>55`);
+  else S('RSI','NÖTR',0,`${rsiS.toFixed(1)}`);
+
+  if(mH>mS&&hiS>0&&hiS>hiP)S('MACD','AL',2,'↑histogram');
+  else if(mH>mS)S('MACD','AL',1,'MACD>Sinyal');
+  else if(mH<mS&&hiS<0&&hiS<hiP)S('MACD','SAT',2,'↓histogram');
+  else if(mH<mS)S('MACD','SAT',1,'MACD<Sinyal');
+  else S('MACD','NÖTR',0,'Kesişim yok');
+
+  if(s200s>0){
+    if(son>s50s&&s50s>s200s)S('Golden Cross','AL',3,'Fiyat>50>200');
+    else if(son>s20s&&son>s50s)S('SMA','AL',2,'Fiyat>20&50');
+    else if(son>s20s)S('SMA','AL',1,'Fiyat>SMA20');
+    else if(son<s50s&&s50s<s200s)S('Death Cross','SAT',3,'Fiyat<50<200');
+    else if(son<s20s&&son<s50s)S('SMA','SAT',2,'Fiyat<20&50');
+    else S('SMA','SAT',1,'Fiyat<SMA20');
+  }
+
+  if(e9s>e21s&&e9p<=e21p)S('EMA Kesişim','AL',2,'EMA9↑EMA21');
+  else if(e9s<e21s&&e9p>=e21p)S('EMA Kesişim','SAT',2,'EMA9↓EMA21');
+  else if(e9s>e21s)S('EMA','AL',1,'EMA9>EMA21');
+  else S('EMA','SAT',1,'EMA9<EMA21');
+
+  if(son<bbLs)S('Bollinger','AL',2,'Alt band altı');
+  else if(son>bbUs)S('Bollinger','SAT',2,'Üst band üstü');
+  else{const p=(son-bbLs)/((bbUs-bbLs)||1);if(p<0.3)S('Bollinger','AL',1,`Alt %${(p*100).toFixed(0)}`);else if(p>0.7)S('Bollinger','SAT',1,`Üst %${(p*100).toFixed(0)}`);else S('Bollinger','NÖTR',0,`Orta %${(p*100).toFixed(0)}`);}
+
+  if(stKs<20&&stDs<20)S('Stokastik','AL',2,`K:${stKs.toFixed(0)} aşırı satım`);
+  else if(stKs>stDs&&stKp<=stDp)S('Stokastik','AL',2,'K↑D kesti');
+  else if(stKs>80&&stDs>80)S('Stokastik','SAT',2,`K:${stKs.toFixed(0)} aşırı alım`);
+  else if(stKs<stDs&&stKp>=stDp)S('Stokastik','SAT',2,'K↓D kesti');
+  else S('Stokastik','NÖTR',0,`K:${stKs.toFixed(0)}`);
+
+  if(hacSon>hacOrt*1.5&&son>prev)S('Hacim','AL',2,`${(hacSon/hacOrt).toFixed(1)}x yük.`);
+  else if(hacSon>hacOrt*1.5)S('Hacim','SAT',2,`${(hacSon/hacOrt).toFixed(1)}x düş.`);
+  else S('Hacim','NÖTR',0,`${(hacSon/hacOrt).toFixed(1)}x`);
+
+  const top=alP+satP||1;
+  const ckap=kap.filter(v=>v!=null);
+  return{
+    sig,alP,satP,ts:(alP-satP)/top,rsi:rsiS,atr:atrS,
+    s20:s20s,s50:s50s,s200:s200s,bbU:bbUs,bbL:bbLs,stK:stKs,
+    destek:Math.min(...ckap.slice(-252)),direnc:Math.max(...ckap.slice(-252)),
+    pivot:((yuk[n-1]||son)+(dus[n-1]||son)+son)/3
+  };
+}
+
+// ── DUYGU ANALİZİ ─────────────────────────────────────────
+function duyguAnalizi(d,teknik){
+  const kap=d.kapanis.filter(v=>v!=null);
+  const hac=d.hacimler.filter(v=>v>0);
+  const n=kap.length;
+  if(n<20)return{skor:0,seviye:'NÖTR',aciklama:'Yetersiz veri',m5:0,m10:0,m20:0,hacSkor:0};
+  const m5 =n>5 ?(kap[n-1]/kap[n-6] -1)*100:0;
+  const m10=n>10?(kap[n-1]/kap[n-11]-1)*100:0;
+  const m20=n>20?(kap[n-1]/kap[n-21]-1)*100:0;
+  const momS=Math.max(-1,Math.min(1,(m5*0.5+m10*0.3+m20*0.2)/15));
+  const rsiS=teknik.rsi;
+  const rsiSkor=rsiS<30?0.8:rsiS<40?0.4:rsiS>70?-0.8:rsiS>60?-0.4:(50-rsiS)/50*0.3;
+  let alH=0,satH=0;
+  for(let i=Math.max(1,n-10);i<n;i++){const hv=hac[Math.min(i,hac.length-1)]||0;if(kap[i]>kap[i-1])alH+=hv;else satH+=hv;}
+  const hacSkor=alH+satH>0?(alH-satH)/(alH+satH):0;
+  const atrPct=teknik.atr/(kap[n-1]||1)*100;
+  const volDuz=Math.max(0.4,1-atrPct/12);
+  const skor=Math.max(-1,Math.min(1,(momS*0.40+rsiSkor*0.35+hacSkor*0.25)*volDuz));
+  let seviye;
+  if(skor>0.5)seviye='ÇOK POZİTİF';
+  else if(skor>0.2)seviye='POZİTİF';
+  else if(skor<-0.5)seviye='ÇOK NEGATİF';
+  else if(skor<-0.2)seviye='NEGATİF';
+  else seviye='NÖTR';
+  return{skor,seviye,aciklama:skor>0.2?`Alım baskısı — 5g: +${m5.toFixed(1)}%`:skor<-0.2?`Satış baskısı — 5g: ${m5.toFixed(1)}%`:`Yatay seyir`,m5,m10,m20,hacSkor};
+}
+
+// ── ANA ANALİZ ────────────────────────────────────────────
+async function hisseAnaliz(sembol){
+  const d=await fetchYahoo(sembol);
+  const kap=d.kapanis.filter(v=>v!=null),n=kap.length;
+  const son=d.fiyat,onceki=d.onceki||son;
+  const g=((son/onceki)-1)*100;
+  const h=n>5?((son/kap[n-6])-1)*100:0;
+  const teknik=teknikAnaliz(d);
+  if(!teknik)throw new Error("Teknik hesaplanamadı");
+  const duygu=duyguAnalizi(d,teknik);
+  const bs=teknik.ts*0.70+duygu.skor*0.30;
+  let karar;
+  if(bs>=0.35)karar='GÜÇLÜ AL';
+  else if(bs>=0.15)karar='AL';
+  else if(bs<=-0.35)karar='GÜÇLÜ SAT';
+  else if(bs<=-0.15)karar='SAT';
+  else karar='TUT';
+  const hedef=karar.includes('AL')?son*(1+Math.min(Math.abs(bs)*0.30,0.25)):son*(1-Math.min(Math.abs(bs)*0.20,0.20));
+  const stop=karar.includes('AL')?son-2*teknik.atr:son+2*teknik.atr;
+  return{sembol,aciklama:d.aciklama,fiyat:son,gunluk:g,haftalik:h,karar,bs,ts:teknik.ts,ds:duygu.skor,hedef,stop,teknik,duygu,rsi:teknik.rsi};
+}
+
+// ── RENDER ────────────────────────────────────────────────
+function sbarHtml(skor){
+  const pct=Math.abs(skor)*50;
+  const sol=skor>=0?'50%':`${((skor+1)/2*100).toFixed(1)}%`;
+  const c=skor>0.2?'var(--green)':skor<-0.2?'var(--red)':'var(--yellow)';
+  return `<div class="skor-track"><div class="skor-fill" style="left:${sol};width:${pct}%;background:${c}"></div><div class="skor-mid-line"></div></div>`;
+}
+function chgHtml(v){
+  if(v==null||isNaN(v))return`<span class="chg z">—</span>`;
+  return`<span class="chg ${v>0?'p':v<0?'n':'z'}">${v>0?'+':''}${v.toFixed(2)}%</span>`;
+}
+function kcls(k){return{'GÜÇLÜ AL':'GA','AL':'AL','TUT':'TT','SAT':'ST','GÜÇLÜ SAT':'GS'}[k]||'LD';}
+function kbadge(k){return{'GÜÇLÜ AL':'bGA','AL':'bAL','TUT':'bTT','SAT':'bST','GÜÇLÜ SAT':'bGS'}[k]||'bLD';}
+
+function renderKart(s){
+  const kc=kcls(s.karar);
+  const sel=secilen===s.sembol?' selected':'';
+  return`<div class="hcard ${kc}${sel}" onclick="openSheet('${s.sembol}')">
+    <div class="hcard-accent"></div>
+    <div class="hcard-body">
+      <div class="hcard-top">
+        <div><div class="hcard-sym">${s.sembol}</div><div class="hcard-name">${(s.aciklama||'').slice(0,28)}</div></div>
+        <span class="badge ${kbadge(s.karar)}">${s.karar}</span>
+      </div>
+      <div class="hcard-mid">
+        <div class="hcard-price">${s.fiyat.toLocaleString('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2})} ₺</div>
+        <div class="hcard-changes">
+          ${chgHtml(s.gunluk)}
+          ${chgHtml(s.haftalik)}
+        </div>
+      </div>
+      <div class="skor-grid">
+        <div class="skor-row">
+          <div class="skor-lbl">BİRLEŞİK</div>
+          ${sbarHtml(s.bs)}
+          <div class="skor-val">${s.bs>=0?'+':''}${s.bs.toFixed(2)}</div>
+        </div>
+        <div class="skor-row">
+          <div class="skor-lbl">TEKNİK</div>
+          ${sbarHtml(s.ts)}
+          <div class="skor-val">${s.ts>=0?'+':''}${s.ts.toFixed(2)}</div>
+        </div>
+        <div class="skor-row">
+          <div class="skor-lbl">DUYGU</div>
+          ${sbarHtml(s.ds)}
+          <div class="skor-val">${s.ds>=0?'+':''}${s.ds.toFixed(2)}</div>
+        </div>
+        <div class="skor-row">
+          <div class="skor-lbl">RSI(14)</div>
+          <div style="font-family:var(--mono);font-size:12px;color:${s.rsi>70?'var(--red)':s.rsi<30?'var(--green)':'var(--text)'};margin-top:2px">${s.rsi.toFixed(1)}</div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderYukleniyor(sembol){
+  return`<div class="hcard-loading">
+    <div class="loader-sym">${sembol}</div>
+    <div class="loader-bar"></div>
+  </div>`;
+}
+
+function render(){
+  let liste=Object.values(veri).filter(v=>v?.karar);
+  if(aktifTab==='al'||aktifTab==='nav-al')liste=liste.filter(v=>['AL','GÜÇLÜ AL'].includes(v.karar));
+  if(aktifTab==='sat'||aktifTab==='nav-sat')liste=liste.filter(v=>['SAT','GÜÇLÜ SAT'].includes(v.karar));
+  if(aktifTab==='tut')liste=liste.filter(v=>v.karar==='TUT');
+  if(aktifTab==='sort_bs')liste=[...liste].sort((a,b)=>b.bs-a.bs);
+  if(aktifTab==='sort_rsi')liste=[...liste].sort((a,b)=>a.rsi-b.rsi);
+  else liste=[...liste].sort((a,b)=>b.bs-a.bs);
+
+  const tum=Object.values(veri).filter(v=>v?.karar);
+  document.getElementById('sGA').textContent=tum.filter(v=>v.karar==='GÜÇLÜ AL').length;
+  document.getElementById('sAL').textContent=tum.filter(v=>v.karar==='AL').length;
+  document.getElementById('sTT').textContent=tum.filter(v=>v.karar==='TUT').length;
+  document.getElementById('sST').textContent=tum.filter(v=>v.karar==='SAT').length;
+  document.getElementById('sGS').textContent=tum.filter(v=>v.karar==='GÜÇLÜ SAT').length;
+  const ei=[...tum].sort((a,b)=>b.bs-a.bs)[0];
+  document.getElementById('sEI').textContent=ei?.sembol||'—';
+
+  if(tum.length>0){
+    const avg=tum.reduce((a,b)=>a+b.ds,0)/tum.length;
+    const pel=document.getElementById('mPD');
+    if(avg>0.2){pel.textContent='🟢 POZİTİF';pel.style.color='var(--green)';}
+    else if(avg<-0.2){pel.textContent='🔴 NEGATİF';pel.style.color='var(--red)';}
+    else{pel.textContent='🟡 NÖTR';pel.style.color='var(--yellow)';}
+  }
+
+  let html=liste.map(s=>renderKart(s)).join('');
+  const bek=HISSELER.filter(h=>!veri[h]);
+  if(bek.length>0&&(aktifTab==='tumu'||aktifTab==='sort_bs'))
+    html+=bek.map(s=>renderYukleniyor(s)).join('');
+
+  document.getElementById('cardsList').innerHTML=html;
+}
+
+// ── DETAY SHEET ───────────────────────────────────────────
+function openSheet(sym){
+  secilen=sym;
+  const s=veri[sym]; if(!s) return;
+  const t=s.teknik,dy=s.duygu;
+  const kc=s.karar.includes('AL')?'var(--green)':s.karar.includes('SAT')?'var(--red)':'var(--yellow)';
+  const dPct=Math.abs(dy.skor)*50;
+  const dSol=dy.skor>=0?'50%':`${((dy.skor+1)/2*100).toFixed(0)}%`;
+  const dR=dy.skor>0.2?'var(--green)':dy.skor<-0.2?'var(--red)':'var(--yellow)';
+  const rOdul=Math.abs(s.fiyat-s.stop)>0?(Math.abs(s.hedef-s.fiyat)/Math.abs(s.fiyat-s.stop)).toFixed(1):'—';
+
+  document.getElementById('sheetScroll').innerHTML=`
+    <div class="sheet-header">
+      <div><div class="sheet-sym">${s.sembol}</div><div class="sheet-name">${s.aciklama||''}</div></div>
+      <button class="sheet-close" onclick="closeSheet()">✕</button>
+    </div>
+    <div class="fblocks">
+      <div class="fblock"><div class="fb-lbl">FİYAT</div><div class="fb-val" style="color:#fff">${s.fiyat.toLocaleString('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2})} ₺</div></div>
+      <div class="fblock"><div class="fb-lbl">GÜNLÜK</div><div class="fb-val" style="color:${s.gunluk>=0?'var(--green)':'var(--red)'}">${s.gunluk>=0?'+':''}${s.gunluk.toFixed(2)}%</div></div>
+      <div class="fblock"><div class="fb-lbl">KARAR</div><div class="fb-val" style="color:${kc};font-size:11px">${s.karar}</div></div>
+    </div>
+
+    <div class="stitle">HEDEF & STOP</div>
+    <div class="srow"><span class="sk">Hedef Fiyat</span><span class="sv" style="color:${kc}">${s.hedef.toFixed(2)} ₺ (${((s.hedef/s.fiyat-1)*100)>=0?'+':''}${((s.hedef/s.fiyat-1)*100).toFixed(1)}%)</span></div>
+    <div class="srow"><span class="sk">Stop Loss</span><span class="sv" style="color:var(--yellow)">${s.stop.toFixed(2)} ₺</span></div>
+    <div class="srow"><span class="sk">Birleşik Skor</span><span class="sv">${s.bs>=0?'+':''}${s.bs.toFixed(3)}</span></div>
+    <div class="srow"><span class="sk">Risk / Ödül</span><span class="sv">${rOdul} : 1</span></div>
+
+    <div class="stitle">TEKNİK GÖSTERGELER</div>
+    <div class="srow"><span class="sk">RSI(14)</span><span class="sv" style="color:${t.rsi>70?'var(--red)':t.rsi<30?'var(--green)':'var(--text)'}">${t.rsi.toFixed(1)} — ${t.rsi>70?'Aşırı Alım':t.rsi<30?'Aşırı Satım':'Normal'}</span></div>
+    <div class="srow"><span class="sk">ATR(14)</span><span class="sv">${t.atr.toFixed(2)} ₺</span></div>
+    <div class="srow"><span class="sk">SMA 20 / 50 / 200</span><span class="sv">${t.s20.toFixed(2)} / ${t.s50.toFixed(2)} / ${t.s200.toFixed(2)}</span></div>
+    <div class="srow"><span class="sk">Destek / Direnç</span><span class="sv">${t.destek.toFixed(2)} / ${t.direnc.toFixed(2)}</span></div>
+
+    <div class="stitle">SİNYALLER — AL:${t.alP} / SAT:${t.satP}</div>
+    ${Object.entries(t.sig).map(([nm,{y,w,ac}])=>`
+      <div class="sig-item">
+        <div class="sig-top">
+          <span class="sig-name">${nm}</span>
+          <span class="sig-yon ${y==='NÖTR'?'NTR':y}">${y} ${'★'.repeat(w)}</span>
+        </div>
+        <div class="sig-ac">${ac}</div>
+      </div>`).join('')}
+
+    <div class="stitle">DUYGU ANALİZİ</div>
+    <div class="duygu-meter">
+      <div class="dm-labels"><span>NEGATİF</span><span>NÖTR</span><span>POZİTİF</span></div>
+      <div class="dm-bar">
+        <div class="dm-mid"></div>
+        <div class="dm-fill" style="left:${dSol};width:${dPct}%;background:${dR}"></div>
+      </div>
+      <div class="dm-skor" style="color:${dR}">${dy.skor>=0?'+':''}${dy.skor.toFixed(3)} — ${dy.seviye}</div>
+    </div>
+    <div style="font-size:12px;color:var(--text);line-height:1.5;margin-top:6px">${dy.aciklama}</div>
+    <div class="srow" style="margin-top:8px"><span class="sk">5g Momentum</span><span class="sv" style="color:${dy.m5>=0?'var(--green)':'var(--red)'}">${dy.m5>=0?'+':''}${dy.m5.toFixed(2)}%</span></div>
+    <div class="srow"><span class="sk">10g Momentum</span><span class="sv" style="color:${dy.m10>=0?'var(--green)':'var(--red)'}">${dy.m10>=0?'+':''}${dy.m10.toFixed(2)}%</span></div>
+    <div class="srow"><span class="sk">Hacim Baskısı</span><span class="sv" style="color:${dy.hacSkor>=0?'var(--green)':'var(--red)'}">${dy.hacSkor>=0?'Alım Ağırlıklı':'Satım Ağırlıklı'} (%${(Math.abs(dy.hacSkor)*100).toFixed(0)})</span></div>
+  `;
+
+  document.getElementById('sheet-overlay').classList.add('show');
+  document.getElementById('bottom-sheet').classList.add('open');
+  render();
+}
+
+function closeSheet(){
+  secilen=null;
+  document.getElementById('bottom-sheet').classList.remove('open');
+  document.getElementById('sheet-overlay').classList.remove('show');
+  render();
+}
+
+// ── NAVİGASYON ────────────────────────────────────────────
+function navGit(sayfa){
+  document.querySelectorAll('.bnav-item').forEach(b=>b.classList.remove('on'));
+  document.getElementById('nav-'+sayfa)?.classList.add('on');
+
+  const sa=document.getElementById('scrollArea');
+  const pa=document.getElementById('page-ayarlar');
+
+  if(sayfa==='ayarlar'){
+    sa.style.display='none';
+    pa.classList.add('show');
+    renderAyarlar();
+  } else {
+    sa.style.display='';
+    pa.classList.remove('show');
+    if(sayfa==='al'){setTab('al',null);}
+    else if(sayfa==='sat'){setTab('sat',null);}
+    else {setTab('tumu',null);}
+  }
+}
+
+// ── FİLTRE ───────────────────────────────────────────────
+function setTab(t,el){
+  aktifTab=t;
+  document.querySelectorAll('.ftab').forEach(x=>x.classList.remove('on'));
+  if(el) el.classList.add('on');
+  render();
+}
+
+// ── GÜNCELLEME ────────────────────────────────────────────
+async function tumYukle(ilk=false){
+  if(yukleniyor)return;
+  yukleniyor=true; clearInterval(cdTimer);
+  const btn=document.getElementById('refreshBtn');
+  btn.classList.add('spin');
+
+  const lb=document.getElementById('lb'),lt=document.getElementById('lt');
+  const top=HISSELER.length; let tam=0;
+
+  for(let i=0;i<HISSELER.length;i+=5){
+    const g=HISSELER.slice(i,i+5);
+    await Promise.all(g.map(async sym=>{
+      try{veri[sym]=await hisseAnaliz(sym);}catch(e){console.warn(sym,e.message);}
+      tam++;
+      if(lb)lb.style.width=(tam/top*100)+'%';
+      if(lt)lt.textContent=`${sym} (${tam}/${top})`;
+      render();
+    }));
+  }
+
+  document.getElementById('mSon').textContent=new Date().toLocaleTimeString('tr-TR');
+
+  // Cache'e kaydet (offline için)
+  try{localStorage.setItem('veri_cache',JSON.stringify(
+    Object.fromEntries(Object.entries(veri).map(([k,v])=>[k,{
+      sembol:v.sembol,fiyat:v.fiyat,gunluk:v.gunluk,haftalik:v.haftalik,
+      karar:v.karar,bs:v.bs,ts:v.ts,ds:v.ds,hedef:v.hedef,stop:v.stop,
+      rsi:v.rsi,aciklama:v.aciklama
+    }]))
+  ));}catch(e){}
+
+  btn.classList.remove('spin');
+  yukleniyor=false; render();
+  toast('✓ Güncellendi');
+
+  if(ilk){
+    const l=document.getElementById('loader');
+    if(l){l.classList.add('hide');setTimeout(()=>l.remove(),600);}
+  }
+  if(otoGuncelle)cdBaslat();
+}
+
+function manuelGuncelle(){veri={};tumYukle(false);}
+
+// ── PULL TO REFRESH ───────────────────────────────────────
+let ptStart=0,ptActive=false;
+const sa=document.getElementById('scrollArea');
+sa.addEventListener('touchstart',e=>{if(sa.scrollTop===0)ptStart=e.touches[0].clientY;},{ passive:true });
+sa.addEventListener('touchmove',e=>{
+  if(ptStart>0&&sa.scrollTop===0){
+    const dy=e.touches[0].clientY-ptStart;
+    if(dy>40&&!ptActive){ptActive=true;document.getElementById('ptr').classList.add('active');}
+  }
+},{passive:true});
+sa.addEventListener('touchend',()=>{
+  if(ptActive){ptActive=false;document.getElementById('ptr').classList.remove('active');manuelGuncelle();}
+  ptStart=0;
+});
+
+// ── TOAST ─────────────────────────────────────────────────
+function toast(msg,ms=2000){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),ms);
+}
+
+// ── AYARLAR ───────────────────────────────────────────────
+function renderAyarlar(){
+  const chips=document.getElementById('hisseChips');
+  chips.innerHTML=HISSELER.map(h=>`
+    <div class="chip" onclick="hisseCikar('${h}')">
+      ${h}<span class="chip-x">×</span>
+    </div>`).join('');
+  document.getElementById('togOto').classList.toggle('on',otoGuncelle);
+}
+function hisseCikar(h){
+  HISSELER=HISSELER.filter(x=>x!==h);
+  delete veri[h];
+  localStorage.setItem('hisseler',JSON.stringify(HISSELER));
+  renderAyarlar(); render();
+  toast(`${h} listeden çıkarıldı`);
+}
+function hisseEkle(){
+  const inp=document.getElementById('yeniHisseInput');
+  const h=inp.value.trim().toUpperCase();
+  if(!h||HISSELER.includes(h)){inp.value='';return;}
+  HISSELER.push(h);
+  localStorage.setItem('hisseler',JSON.stringify(HISSELER));
+  inp.value=''; renderAyarlar();
+  toast(`${h} eklendi — güncelleniyor...`);
+  hisseAnaliz(h).then(s=>{if(s){veri[h]=s;render();}}).catch(()=>{});
+}
+function toggleAyar(tip){
+  if(tip==='oto'){
+    otoGuncelle=!otoGuncelle;
+    ayarlar.oto=otoGuncelle;
+    localStorage.setItem('ayarlar',JSON.stringify(ayarlar));
+    document.getElementById('togOto').classList.toggle('on',otoGuncelle);
+    if(otoGuncelle)cdBaslat(); else clearInterval(cdTimer);
+    toast(otoGuncelle?'Oto. güncelleme açık':'Oto. güncelleme kapalı');
+  }
+  if(tip==='bildirim'){
+    document.getElementById('togBildirim').classList.toggle('on');
+    toast('Bildirimler yakında!');
+  }
+}
+
+// ── BAŞLAT ────────────────────────────────────────────────
+// Offline cache varsa göster
+try{
+  const cache=JSON.parse(localStorage.getItem('veri_cache')||'{}');
+  if(Object.keys(cache).length>0){
+    veri=cache; render();
+    const lt=document.getElementById('lt');
+    if(lt) lt.textContent='Önbellek yüklendi, güncelleniyor...';
+  }
+}catch(e){}
+
+document.addEventListener('DOMContentLoaded',()=>tumYukle(true));
+</script>
+</body>
+</html>
