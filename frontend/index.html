@@ -618,7 +618,7 @@ const BACKEND_URL = (() => {
   const host = location.hostname;
   if (host === 'localhost' || host === '127.0.0.1') return 'http://localhost:5000';
   // GitHub Pages deploy: buraya Render URL'ini yaz
-  return 'https://bistbot-api.onrender.com';  // ← Render URL'ini buraya yaz
+  return 'https://bistbot-ains.onrender.com';  // ← Render URL'ini buraya yaz
 })();
 
 const api = (path) => `${BACKEND_URL}${path}`;
