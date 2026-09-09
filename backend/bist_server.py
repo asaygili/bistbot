@@ -1726,6 +1726,55 @@ def api_kelly(sembol):
         "risk_odul": sonuc["risk_odul"],
     })
 
+# ── Chart (OHLCV + İndikatörler) ─────────────────────────────────────────────
+@app.route("/api/chart/<sembol>")
+def api_chart(sembol):
+    period = request.args.get("period", "6mo")
+    if period not in ["1mo", "3mo", "6mo", "1y", "2y"]:
+        period = "6mo"
+    try:
+        ticker = yf.Ticker(f"{sembol.upper()}.IS")
+        df = ticker.history(period=period)
+        if df.empty:
+            return jsonify({"hata": "Veri yok"})
+        df.columns = [c[0] if isinstance(c, tuple) else c for c in df.columns]
+
+        duz = FIYAT_DUZELTME.get(sembol.upper(), 1)
+        if duz != 1:
+            for col in ["Open", "High", "Low", "Close"]:
+                if col in df.columns:
+                    df[col] *= duz
+
+        c  = df["Close"]
+        sma20_s = _sma(c, 20)
+        sma50_s = _sma(c, 50)
+        rsi_s   = _rsi(c, 14)
+
+        candles = []
+        for i, (idx, row) in enumerate(df.iterrows()):
+            try:
+                ts = int(idx.timestamp())
+                s20 = float(sma20_s.iloc[i])
+                s50 = float(sma50_s.iloc[i])
+                ri  = float(rsi_s.iloc[i])
+                candles.append({
+                    "time":   ts,
+                    "open":   round(float(row["Open"]),  2),
+                    "high":   round(float(row["High"]),  2),
+                    "low":    round(float(row["Low"]),   2),
+                    "close":  round(float(row["Close"]), 2),
+                    "volume": int(row.get("Volume", 0) or 0),
+                    "sma20":  round(s20, 2) if math.isfinite(s20) else None,
+                    "sma50":  round(s50, 2) if math.isfinite(s50) else None,
+                    "rsi":    round(ri,  2) if math.isfinite(ri)  else None,
+                })
+            except Exception:
+                pass
+
+        return jsonify({"sembol": sembol.upper(), "period": period, "data": candles})
+    except Exception as e:
+        return jsonify({"hata": str(e)})
+
 # ── ARIMA ─────────────────────────────────────────────────────────────────────
 @app.route("/api/arima/<sembol>")
 def api_arima(sembol):

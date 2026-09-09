@@ -7,6 +7,7 @@
 <title>BISTBot</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
 <style>
 :root{
   --bg:#f5f7fa;--bg2:#fff;--bg3:#f0f2f7;--bg4:#e8ebf2;
@@ -20,12 +21,23 @@
   --mono:'DM Mono',monospace;--sans:'DM Sans',sans-serif;
   --r:10px;--r2:7px;
 }
+[data-theme="dark"]{
+  --bg:#0f1117;--bg2:#1a1d27;--bg3:#242736;--bg4:#2e3245;
+  --border:#2e3245;--border2:#3d4262;
+  --accent:#3b82f6;--accent2:#2563eb;
+  --green:#10b981;--green2:#34d399;
+  --red:#ef4444;--red2:#f87171;
+  --yellow:#f59e0b;--cyan:#22d3ee;
+  --text:#f1f5f9;--text2:#94a3b8;--text3:#475569;
+  --shadow:0 1px 4px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.25);
+}
 *{margin:0;padding:0;box-sizing:border-box;}
-body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;min-height:100vh;}
-.topbar{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.95);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 16px;display:flex;align-items:center;height:54px;gap:12px;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;min-height:100vh;transition:background .2s,color .2s;}
+.topbar{position:sticky;top:0;z-index:100;background:var(--bg2);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 16px;display:flex;align-items:center;height:54px;gap:12px;}
+[data-theme="dark"] .topbar{background:rgba(26,29,39,.97);}
 .logo{font-family:var(--mono);font-size:17px;font-weight:500;color:var(--accent);display:flex;align-items:center;gap:8px;white-space:nowrap;}
 .logo-badge{background:var(--accent);color:#fff;font-size:9px;padding:2px 6px;border-radius:4px;font-family:var(--sans);}
-.live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 0 2px rgba(5,150,105,.2);animation:blink 2s infinite;}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 0 2px rgba(16,185,129,.2);animation:blink 2s infinite;}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 .search-wrap{flex:1;max-width:300px;display:flex;align-items:center;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:0 10px;gap:6px;transition:border-color .15s;}
 .search-wrap:focus-within{border-color:var(--accent);}
@@ -37,10 +49,11 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 .btn-primary{background:var(--accent);color:#fff;box-shadow:0 1px 3px rgba(37,99,235,.3);}
 .btn-primary:hover{background:var(--accent2);}
 .btn-ghost{background:var(--bg3);border:1px solid var(--border);color:var(--text2);}
+.btn-icon{width:34px;height:34px;padding:0;border-radius:8px;justify-content:center;}
 #menuBtn{display:none;}
 .makro-strip{background:var(--bg2);border-bottom:1px solid var(--border);display:flex;overflow-x:auto;scrollbar-width:none;}
 .makro-strip::-webkit-scrollbar{display:none;}
-.makro-chip{display:flex;flex-direction:column;gap:1px;padding:8px 16px;border-right:1px solid var(--border);flex-shrink:0;}
+.makro-chip{display:flex;flex-direction:column;gap:1px;padding:8px 16px;border-right:1px solid var(--border);flex-shrink:0;cursor:default;}
 .makro-chip.rej{margin-left:auto;border-right:none;border-left:1px solid var(--border);}
 .ml{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;font-weight:500;}
 .mv{font-family:var(--mono);font-size:13px;font-weight:500;}
@@ -83,6 +96,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 .iST{background:#fee2e2;color:var(--red2);}
 .iGS{background:#fecaca;color:var(--red);}
 .iLD{background:var(--bg4);color:var(--text3);}
+[data-theme="dark"] .iGA{background:#064e3b;} [data-theme="dark"] .iAL{background:#065f46;}
+[data-theme="dark"] .iTT{background:#78350f;} [data-theme="dark"] .iST{background:#7f1d1d;}
+[data-theme="dark"] .iGS{background:#991b1b;}
 .sbif{flex:1;min-width:0;}
 .sbsym{font-family:var(--mono);font-size:13px;font-weight:500;}
 .sbpx{font-size:11px;color:var(--text2);margin-top:1px;}
@@ -104,6 +120,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 .tab.active{color:var(--accent);border-bottom-color:var(--accent);}
 .tp{display:none;padding:16px;flex:1;}
 .tp.active{display:block;}
+.tp.chart-panel{padding:0;}
 .detay{display:flex;flex-direction:column;gap:14px;}
 .dh{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
 .dsym{font-family:var(--mono);font-size:26px;font-weight:500;}
@@ -115,6 +132,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 .kTT{background:#fef3c7;color:var(--yellow);border:1px solid #fde68a;}
 .kST{background:#fee2e2;color:var(--red2);border:1px solid #fecaca;}
 .kGS{background:#fecaca;color:var(--red);border:1px solid #fca5a5;}
+[data-theme="dark"] .kGA{background:#064e3b;border-color:#065f46;} [data-theme="dark"] .kAL{background:#065f46;border-color:#047857;}
+[data-theme="dark"] .kTT{background:#78350f;border-color:#92400e;} [data-theme="dark"] .kST{background:#7f1d1d;border-color:#991b1b;}
+[data-theme="dark"] .kGS{background:#991b1b;border-color:#b91c1c;}
 .fpx{font-family:var(--mono);font-size:32px;font-weight:500;}
 .frow{display:flex;gap:16px;align-items:center;}
 .fchg{display:flex;flex-direction:column;gap:4px;}
@@ -149,6 +169,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 .pal{background:#dcfce7;border:1px solid #bbf7d0;}
 .ptu{background:var(--bg3);border:1px solid var(--border);}
 .psa{background:#fef2f2;border:1px solid #fecaca;}
+[data-theme="dark"] .pal{background:#064e3b;border-color:#065f46;}
+[data-theme="dark"] .psa{background:#7f1d1d;border-color:#991b1b;}
 .kitem{padding:10px 12px;border-radius:var(--r2);border-left:3px solid;margin-bottom:6px;background:var(--bg3);}
 .kitem.kp{border-color:var(--green);}
 .kitem.kn{border-color:var(--red);}
@@ -172,6 +194,43 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 @keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .mob-ov{display:none;position:fixed;inset:0;top:54px;background:rgba(0,0,0,.3);z-index:199;}
 .mob-ov.open{display:block;}
+
+/* ── Chart Stili ─────────────────────────────────────────────── */
+.chart-wrap{display:flex;flex-direction:column;height:100%;min-height:420px;}
+.chart-toolbar{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--bg2);flex-shrink:0;}
+.chart-toolbar span{font-size:13px;font-weight:600;font-family:var(--mono);}
+.period-btn{padding:3px 10px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:12px;font-weight:500;cursor:pointer;transition:all .12s;}
+.period-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+#chartMain{flex:1;min-height:260px;}
+.chart-legend{display:flex;gap:14px;padding:6px 14px;font-size:11px;font-family:var(--mono);border-top:1px solid var(--border);background:var(--bg2);flex-wrap:wrap;}
+.cl-item{display:flex;align-items:center;gap:4px;}
+.cl-dot{width:10px;height:3px;border-radius:2px;}
+#rsiChart{height:110px;border-top:1px solid var(--border);}
+
+/* ── Portföy Stili ───────────────────────────────────────────── */
+.port-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
+.port-total{font-family:var(--mono);font-size:22px;font-weight:500;}
+.port-form{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:14px;}
+.port-form-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px;}
+.port-input{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-family:var(--sans);font-size:13px;color:var(--text);outline:none;width:100%;}
+.port-input:focus{border-color:var(--accent);}
+.port-table{width:100%;border-collapse:collapse;font-size:13px;}
+.port-table th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);font-weight:600;padding:8px 10px;border-bottom:1px solid var(--border);}
+.port-table td{padding:10px 10px;border-bottom:1px solid var(--border);vertical-align:middle;}
+.port-table tr:last-child td{border-bottom:none;}
+.port-table tr:hover td{background:var(--bg3);}
+.port-sym{font-family:var(--mono);font-weight:500;}
+.port-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:2px 6px;border-radius:4px;transition:all .12s;}
+.port-del:hover{background:var(--red);color:#fff;}
+.port-empty{padding:32px;text-align:center;color:var(--text3);font-size:13px;}
+.port-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
+.port-kart{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:12px;text-align:center;}
+.port-kart-l{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);font-weight:600;margin-bottom:4px;}
+.port-kart-v{font-family:var(--mono);font-size:18px;font-weight:500;}
+
+/* ── Dark Mode Toggle ────────────────────────────────────────── */
+.dm-btn{font-size:16px;}
+
 @media(max-width:768px){
   .layout{grid-template-columns:1fr;}
   .sidebar{display:none;position:fixed;top:54px;left:0;bottom:0;width:260px;z-index:200;box-shadow:0 4px 24px rgba(0,0,0,.15);}
@@ -184,6 +243,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
   .dsym{font-size:20px;}
   .btn-lbl{display:none;}
   .tp{padding:12px;}
+  .port-form-grid{grid-template-columns:1fr 1fr;}
+  .port-summary{grid-template-columns:1fr 1fr;}
+  .chart-toolbar{gap:4px;}
 }
 ::-webkit-scrollbar{width:5px;height:5px;}
 ::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px;}
@@ -205,6 +267,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
     <button onclick="aramaSifirla()">✕</button>
   </div>
   <div class="topbar-right">
+    <button class="btn btn-ghost btn-icon dm-btn" onclick="toggleDark()" title="Dark mode">🌙</button>
     <button class="btn btn-ghost" id="menuBtn" onclick="toggleSb()">☰</button>
     <button class="btn btn-primary" onclick="yukle(true)">↻ <span class="btn-lbl">Güncelle</span></button>
   </div>
@@ -262,18 +325,22 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
     <div id="detayWrap" style="display:none;flex-direction:column;">
       <div class="tabs">
         <button class="tab active" onclick="sekme('Analiz',this)">Analiz</button>
+        <button class="tab" onclick="sekme('Grafik',this)">📈 Grafik</button>
         <button class="tab" onclick="sekme('Teknik',this)">Teknik</button>
         <button class="tab" onclick="sekme('Ml',this)">ML</button>
         <button class="tab" onclick="sekme('Kap',this)">KAP</button>
         <button class="tab" onclick="sekme('Duygu',this)">Haberler</button>
         <button class="tab" onclick="sekme('Bt',this)">Backtest</button>
+        <button class="tab" onclick="sekme('Port',this)">💼 Portföy</button>
       </div>
       <div id="tpAnaliz" class="tp active"></div>
+      <div id="tpGrafik" class="tp chart-panel"></div>
       <div id="tpTeknik" class="tp"></div>
       <div id="tpMl" class="tp"></div>
       <div id="tpKap" class="tp"></div>
       <div id="tpDuygu" class="tp"></div>
       <div id="tpBt" class="tp"></div>
+      <div id="tpPort" class="tp"></div>
     </div>
   </div>
 </div>
@@ -283,13 +350,31 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 const BACKEND = (()=>{
   const h=location.hostname;
   if(h==='localhost'||h==='127.0.0.1') return '';
-  return 'https://bistbot-ains.onrender.com'; // ← Render URL
+  return 'https://bistbot-ains.onrender.com';
 })();
 const api=p=>BACKEND+p;
 
 // ── STATE ───────────────────────────────────────────────────────
 let veri={},aktifSym=null,aktifFiltre='ALL';
 let yukleniyor=false,toplamB=0,toplamG=0;
+let _chartInst=null,_rsiInst=null,_chartPeriod='6mo';
+
+// ── DARK MODE ───────────────────────────────────────────────────
+function initDark(){
+  try{const d=localStorage.getItem('bist_dark');if(d)document.documentElement.setAttribute('data-theme','dark');}catch{}
+}
+function toggleDark(){
+  const curr=document.documentElement.getAttribute('data-theme');
+  const next=curr==='dark'?null:'dark';
+  if(next)document.documentElement.setAttribute('data-theme','dark');
+  else document.documentElement.removeAttribute('data-theme');
+  try{if(next)localStorage.setItem('bist_dark','1');else localStorage.removeItem('bist_dark');}catch{}
+  document.querySelector('.dm-btn').textContent=next?'☀️':'🌙';
+  if(_chartInst)renderGrafik();
+}
+initDark();
+if(document.documentElement.getAttribute('data-theme')==='dark')
+  document.querySelector('.dm-btn') && (document.querySelector('.dm-btn').textContent='☀️');
 
 // ── YARDIMCI ────────────────────────────────────────────────────
 const f2=(n,d=2)=>n==null?'—':Number(n).toFixed(d);
@@ -315,10 +400,22 @@ function setLive(s){
   const d=document.getElementById('liveDot');
   d.style.background=s==='ok'?'var(--green)':s==='err'?'var(--red)':'var(--yellow)';
 }
+
+// ── SIDEBAR & SWIPE ─────────────────────────────────────────────
+let _swipeX=null;
 function toggleSb(){
   document.getElementById('sidebar').classList.toggle('open');
   document.getElementById('mobOv').classList.toggle('open');
 }
+document.addEventListener('touchstart',e=>{_swipeX=e.touches[0].clientX;},{passive:true});
+document.addEventListener('touchend',e=>{
+  if(_swipeX===null)return;
+  const dx=e.changedTouches[0].clientX-_swipeX;
+  const sb=document.getElementById('sidebar');
+  if(dx<-60&&sb.classList.contains('open'))toggleSb();
+  if(dx>60&&!sb.classList.contains('open')&&_swipeX<40)toggleSb();
+  _swipeX=null;
+},{passive:true});
 window.addEventListener('resize',()=>{
   if(window.innerWidth>768){
     document.getElementById('sidebar').classList.remove('open');
@@ -389,6 +486,7 @@ function renderListe(){
   document.getElementById('stST').textContent=cnt('GÜÇLÜ SAT')+cnt('SAT');
   const r=all.length&&all[0].piyasa_rejimi;
   if(r)document.getElementById('mR').textContent=r.etiket||'—';
+  portGuncelle();
 }
 
 function guncelItem(d){
@@ -477,7 +575,15 @@ function secHisse(sym){
   document.getElementById('si-'+sym)?.classList.add('active');
   document.getElementById('emptySt').style.display='none';
   document.getElementById('detayWrap').style.display='flex';
+  ['Kap','Duygu','Bt','Grafik'].forEach(id=>{
+    const p=document.getElementById('tp'+id);if(p)p._ld=false;
+  });
   if(veri[sym])renderDetay(veri[sym]);
+  const aktifTab=document.querySelector('.tab.active');
+  if(aktifTab){
+    const id=aktifTab.textContent.replace(/[^a-zA-Z]/g,'');
+    if(id==='Grafik')renderGrafik();
+  }
   if(window.innerWidth<=768)toggleSb();
 }
 
@@ -488,14 +594,16 @@ function sekme(id,btn){
   btn?.classList.add('active');
   const panel=document.getElementById('tp'+id);
   if(panel)panel.classList.add('active');
-  if(id==='Kap'  &&panel&&!panel._ld){panel._ld=true;renderKap(panel);}
-  if(id==='Duygu'&&panel&&!panel._ld){panel._ld=true;renderDuygu(panel);}
-  if(id==='Bt'   &&panel&&!panel._ld){panel._ld=true;renderBt(panel);}
+  if(id==='Kap'   &&panel&&!panel._ld){panel._ld=true;renderKap(panel);}
+  if(id==='Duygu' &&panel&&!panel._ld){panel._ld=true;renderDuygu(panel);}
+  if(id==='Bt'    &&panel&&!panel._ld){panel._ld=true;renderBt(panel);}
+  if(id==='Grafik'&&panel&&!panel._ld){panel._ld=true;renderGrafik();}
+  if(id==='Port')renderPort();
 }
 
 // ── DETAY ───────────────────────────────────────────────────────
 function renderDetay(d){
-  ['Kap','Duygu','Bt'].forEach(id=>{const p=document.getElementById('tp'+id);if(p)p._ld=false;});
+  ['Kap','Duygu','Bt','Grafik'].forEach(id=>{const p=document.getElementById('tp'+id);if(p)p._ld=false;});
   const t=d.teknik||{},an=d.analist||{},ar=d.arima||{};
   const ol=d.ml_olasilik||{},kelly=d.kelly||{};
   const pAL=((ol[1]||0)*100).toFixed(0);
@@ -509,7 +617,10 @@ function renderDetay(d){
         <div class="dskt">${d.sirket||'—'}</div>
         ${d.sektor?`<div class="dsec">${d.sektor}</div>`:''}
       </div>
-      <div class="kbadge ${KBADGE[d.karar]||''}">${d.karar||'—'}</div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+        <div class="kbadge ${KBADGE[d.karar]||''}">${d.karar||'—'}</div>
+        <button class="btn btn-ghost" style="font-size:12px;padding:5px 10px" onclick="portEkleHizli('${d.sembol}',${d.fiyat})">+ Portföye Ekle</button>
+      </div>
     </div>
     <div class="frow">
       <div class="fpx">${ftl(d.fiyat)}</div>
@@ -591,6 +702,241 @@ function renderDetay(d){
   </div>`;
 }
 
+// ── GRAFİK ──────────────────────────────────────────────────────
+function isDark(){return document.documentElement.getAttribute('data-theme')==='dark';}
+
+async function renderGrafik(){
+  if(!aktifSym)return;
+  const panel=document.getElementById('tpGrafik');
+  panel.innerHTML=`<div class="chart-wrap">
+    <div class="chart-toolbar">
+      <span id="chartTitle">${aktifSym}</span>
+      <div style="display:flex;gap:4px;margin-left:8px">
+        ${['1mo','3mo','6mo','1y','2y'].map(p=>`<button class="period-btn${p===_chartPeriod?' active':''}" onclick="secPeriod('${p}')">${p}</button>`).join('')}
+      </div>
+      <div id="chartOHLC" style="margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--text3)"></div>
+    </div>
+    <div id="chartMain"></div>
+    <div class="chart-legend">
+      <div class="cl-item"><div class="cl-dot" style="background:#26a69a"></div><span>Mum</span></div>
+      <div class="cl-item"><div class="cl-dot" style="background:#f59e0b"></div><span>SMA20</span></div>
+      <div class="cl-item"><div class="cl-dot" style="background:#818cf8"></div><span>SMA50</span></div>
+    </div>
+    <div id="rsiChart"></div>
+  </div>`;
+
+  panel._ld=true;
+
+  try{
+    const r=await fetch(api('/api/chart/'+aktifSym+'?period='+_chartPeriod));
+    const d=await r.json();
+    if(d.hata||!d.data?.length){
+      panel.innerHTML='<div style="padding:40px;text-align:center;color:var(--text3)">Grafik verisi yüklenemedi</div>';
+      return;
+    }
+
+    const dark=isDark();
+    const chartOpts={
+      layout:{background:{color:dark?'#1a1d27':'#ffffff'},textColor:dark?'#94a3b8':'#4b5563'},
+      grid:{vertLines:{color:dark?'#2e3245':'#e2e6ef'},horzLines:{color:dark?'#2e3245':'#e2e6ef'}},
+      crosshair:{mode:LightweightCharts.CrosshairMode.Normal},
+      rightPriceScale:{borderColor:dark?'#2e3245':'#e2e6ef'},
+      timeScale:{borderColor:dark?'#2e3245':'#e2e6ef',timeVisible:true},
+      handleScroll:true,handleScale:true,
+    };
+
+    const mainEl=document.getElementById('chartMain');
+    mainEl.style.height=(window.innerWidth<=768?240:320)+'px';
+    if(_chartInst)try{_chartInst.remove();}catch{}
+    _chartInst=LightweightCharts.createChart(mainEl,{...chartOpts,width:mainEl.clientWidth,height:mainEl.offsetHeight});
+
+    const canSeries=_chartInst.addCandlestickSeries({
+      upColor:'#26a69a',downColor:'#ef5350',borderVisible:false,
+      wickUpColor:'#26a69a',wickDownColor:'#ef5350',
+    });
+
+    const canData=d.data.map(b=>({time:b.time,open:b.open,high:b.high,low:b.low,close:b.close}));
+    canSeries.setData(canData);
+
+    const volSeries=_chartInst.addHistogramSeries({
+      color:'rgba(100,116,139,0.3)',priceFormat:{type:'volume'},priceScaleId:'',
+      scaleMargins:{top:0.85,bottom:0},
+    });
+    volSeries.setData(d.data.map(b=>({time:b.time,value:b.volume,color:b.close>=b.open?'rgba(38,166,154,.35)':'rgba(239,83,80,.35)'})));
+
+    const sma20=_chartInst.addLineSeries({color:'#f59e0b',lineWidth:1.5,priceLineVisible:false,lastValueVisible:false});
+    sma20.setData(d.data.filter(b=>b.sma20).map(b=>({time:b.time,value:b.sma20})));
+    const sma50=_chartInst.addLineSeries({color:'#818cf8',lineWidth:1.5,priceLineVisible:false,lastValueVisible:false});
+    sma50.setData(d.data.filter(b=>b.sma50).map(b=>({time:b.time,value:b.sma50})));
+
+    // RSI alt grafik
+    const rsiEl=document.getElementById('rsiChart');
+    rsiEl.style.height='100px';
+    if(_rsiInst)try{_rsiInst.remove();}catch{}
+    _rsiInst=LightweightCharts.createChart(rsiEl,{
+      ...chartOpts,width:rsiEl.clientWidth,height:100,
+      rightPriceScale:{...chartOpts.rightPriceScale,scaleMargins:{top:0.1,bottom:0.1}},
+      timeScale:{...chartOpts.timeScale,visible:false},
+    });
+    const rsiSeries=_rsiInst.addLineSeries({color:'#22d3ee',lineWidth:1.5,priceLineVisible:false,lastValueVisible:true});
+    rsiSeries.setData(d.data.filter(b=>b.rsi!=null).map(b=>({time:b.time,value:b.rsi})));
+    rsiSeries.createPriceLine({price:70,color:'rgba(239,83,80,.5)',lineWidth:1,lineStyle:LightweightCharts.LineStyle.Dashed});
+    rsiSeries.createPriceLine({price:30,color:'rgba(38,166,154,.5)',lineWidth:1,lineStyle:LightweightCharts.LineStyle.Dashed});
+
+    // Sync scroll
+    _chartInst.timeScale().subscribeVisibleTimeRangeChange(range=>{
+      if(range&&_rsiInst)_rsiInst.timeScale().setVisibleRange(range);
+    });
+
+    // Crosshair tooltip
+    const ohlcEl=document.getElementById('chartOHLC');
+    _chartInst.subscribeCrosshairMove(param=>{
+      if(!param.time){ohlcEl.textContent='';return;}
+      const b=d.data.find(x=>x.time===param.time);
+      if(b)ohlcEl.innerHTML=`O:${b.open} H:${b.high} L:${b.low} C:<b style="color:${b.close>=b.open?'#26a69a':'#ef5350'}">${b.close}</b>`;
+    });
+
+    _chartInst.timeScale().fitContent();
+
+  }catch(e){
+    console.error(e);
+    panel.innerHTML='<div style="padding:40px;text-align:center;color:var(--red)">Grafik yüklenemedi</div>';
+  }
+}
+
+function secPeriod(p){
+  _chartPeriod=p;
+  const panel=document.getElementById('tpGrafik');
+  if(panel)panel._ld=false;
+  renderGrafik();
+}
+
+// ── PORTFÖY ─────────────────────────────────────────────────────
+function portYukle(){try{return JSON.parse(localStorage.getItem('bist_port')||'[]');}catch{return [];}}
+function portKaydet(p){try{localStorage.setItem('bist_port',JSON.stringify(p));}catch{}}
+
+function portEkleHizli(sym,fiyat){
+  const adet=prompt(`${sym} için kaç adet alındı?`,'1');
+  if(!adet)return;
+  const maliyet=prompt(`${sym} alış fiyatı (₺)?`,String(fiyat));
+  if(!maliyet)return;
+  const p=portYukle();
+  const mev=p.findIndex(x=>x.s===sym);
+  const item={s:sym,a:parseFloat(adet)||1,m:parseFloat(maliyet)||fiyat,t:new Date().toLocaleDateString('tr-TR')};
+  if(mev>=0)p[mev]=item;else p.push(item);
+  portKaydet(p);
+  showToast(`${sym} portföye eklendi`,'ok');
+}
+
+function portGuncelle(){
+  const portTab=document.getElementById('tpPort');
+  if(portTab&&portTab.classList.contains('active'))renderPort();
+}
+
+function renderPort(){
+  const panel=document.getElementById('tpPort');
+  if(!panel)return;
+  const p=portYukle();
+
+  let toplamMaliyet=0,toplamDeger=0;
+  const satirlar=p.map(item=>{
+    const guncel=veri[item.s]?.fiyat||item.m;
+    const maliyet=item.a*item.m;
+    const deger=item.a*guncel;
+    const karZarar=deger-maliyet;
+    const karPct=(karZarar/maliyet*100);
+    toplamMaliyet+=maliyet;
+    toplamDeger+=deger;
+    return {item,guncel,maliyet,deger,karZarar,karPct};
+  });
+
+  const topKZ=toplamDeger-toplamMaliyet;
+  const topKPct=toplamMaliyet>0?(topKZ/toplamMaliyet*100):0;
+
+  panel.innerHTML=`<div class="detay fade-in">
+    <div class="port-header">
+      <div>
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);font-weight:600;margin-bottom:4px">Toplam Portföy</div>
+        <div class="port-total">${ftl(toplamDeger)}</div>
+      </div>
+    </div>
+    <div class="port-summary">
+      <div class="port-kart">
+        <div class="port-kart-l">Maliyet</div>
+        <div class="port-kart-v">${ftl(toplamMaliyet)}</div>
+      </div>
+      <div class="port-kart">
+        <div class="port-kart-l">Kâr/Zarar</div>
+        <div class="port-kart-v ${pc(topKZ)}">${topKZ>=0?'+':''}${ftl(topKZ)}</div>
+      </div>
+      <div class="port-kart">
+        <div class="port-kart-l">Getiri</div>
+        <div class="port-kart-v ${pc(topKPct)}">${fp(topKPct)}</div>
+      </div>
+    </div>
+
+    <div class="port-form">
+      <div class="ct">Yeni Pozisyon Ekle</div>
+      <div class="port-form-grid">
+        <input class="port-input" id="pSym" placeholder="Hisse kodu (GARAN)" style="text-transform:uppercase">
+        <input class="port-input" id="pAdet" placeholder="Adet" type="number" min="1" step="1">
+        <input class="port-input" id="pMaliyet" placeholder="Alış fiyatı (₺)" type="number" min="0" step="0.01">
+      </div>
+      <button class="btn btn-primary" onclick="portEkle()">Ekle</button>
+    </div>
+
+    ${satirlar.length?`
+    <div class="card" style="overflow-x:auto">
+      <table class="port-table">
+        <thead><tr>
+          <th>Hisse</th><th>Adet</th><th>Alış</th><th>Güncel</th><th>Maliyet</th><th>Değer</th><th>K/Z</th><th></th>
+        </tr></thead>
+        <tbody>
+          ${satirlar.map(({item,guncel,maliyet,deger,karZarar,karPct})=>`
+          <tr>
+            <td><span class="port-sym" style="cursor:pointer" onclick="secHisse('${item.s}')">${item.s}</span><br><small style="color:var(--text3);font-size:10px">${item.t||''}</small></td>
+            <td>${item.a}</td>
+            <td style="font-family:var(--mono)">${ftl(item.m)}</td>
+            <td style="font-family:var(--mono)" class="${pc(guncel-item.m)}">${ftl(guncel)}</td>
+            <td style="font-family:var(--mono)">${ftl(maliyet)}</td>
+            <td style="font-family:var(--mono)">${ftl(deger)}</td>
+            <td style="font-family:var(--mono)" class="${pc(karZarar)}">
+              ${karZarar>=0?'+':''}${ftl(karZarar)}<br>
+              <small>${fp(karPct)}</small>
+            </td>
+            <td><button class="port-del" onclick="portSil('${item.s}')">×</button></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`:'<div class="port-empty">Portföy boş. Yukarıdan hisse ekleyin veya Analiz sekmesindeki "Portföye Ekle" düğmesini kullanın.</div>'}
+  </div>`;
+}
+
+function portEkle(){
+  const sym=(document.getElementById('pSym').value||'').toUpperCase().trim();
+  const adet=parseFloat(document.getElementById('pAdet').value)||0;
+  const maliyet=parseFloat(document.getElementById('pMaliyet').value)||0;
+  if(!sym||adet<=0||maliyet<=0){showToast('Hisse kodu, adet ve fiyat giriniz','err');return;}
+  const p=portYukle();
+  const mev=p.findIndex(x=>x.s===sym);
+  const item={s:sym,a:adet,m:maliyet,t:new Date().toLocaleDateString('tr-TR')};
+  if(mev>=0)p[mev]=item;else p.push(item);
+  portKaydet(p);
+  document.getElementById('pSym').value='';
+  document.getElementById('pAdet').value='';
+  document.getElementById('pMaliyet').value='';
+  renderPort();
+  showToast(sym+' portföye eklendi','ok');
+}
+
+function portSil(sym){
+  if(!confirm(sym+' portföyden silinsin mi?'))return;
+  portKaydet(portYukle().filter(x=>x.s!==sym));
+  renderPort();
+  showToast(sym+' portföyden silindi','ok');
+}
+
+// ── KAP ─────────────────────────────────────────────────────────
 function renderKap(panel){
   if(!aktifSym||!veri[aktifSym]){panel.innerHTML='<div style="padding:20px;color:var(--text3)">Hisse seçilmedi</div>';return;}
   const d=veri[aktifSym],kap=d.kap||{},bil=kap.bildirimleri||[];
@@ -608,6 +954,7 @@ function renderKap(panel){
   </div>`;
 }
 
+// ── HABERLER ────────────────────────────────────────────────────
 function renderDuygu(panel){
   if(!aktifSym||!veri[aktifSym]){panel.innerHTML='<div style="padding:20px;color:var(--text3)">Hisse seçilmedi</div>';return;}
   const d=veri[aktifSym],dy=d.duygu||{},hab=dy.haberler||[];
@@ -624,6 +971,7 @@ function renderDuygu(panel){
   </div>`;
 }
 
+// ── BACKTEST ────────────────────────────────────────────────────
 async function renderBt(panel){
   if(!aktifSym){panel.innerHTML='<div style="padding:20px;color:var(--text3)">Hisse seçilmedi</div>';return;}
   panel.innerHTML='<div style="padding:40px;text-align:center;color:var(--text2)">⏳ Hesaplanıyor…<br><small style="color:var(--text3)">~30 saniye</small></div>';
@@ -652,6 +1000,7 @@ async function renderBt(panel){
   }catch{panel.innerHTML='<div style="padding:20px;color:var(--red)">Bağlantı hatası</div>';}
 }
 
+// ── INIT ────────────────────────────────────────────────────────
 async function init(){
   try{await fetch(api('/api/ping'));}catch{}
   makroYukle();
