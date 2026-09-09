@@ -357,7 +357,7 @@ const api=p=>BACKEND+p;
 // ── STATE ───────────────────────────────────────────────────────
 let veri={},aktifSym=null,aktifFiltre='ALL';
 let yukleniyor=false,toplamB=0,toplamG=0;
-let _chartInst=null,_rsiInst=null,_chartPeriod='6mo';
+let _chartInst=null,_rsiInst=null,_chartPeriod='6mo',_chartInd='rsi';
 
 // ── DARK MODE ───────────────────────────────────────────────────
 function initDark(){
@@ -685,6 +685,12 @@ function renderDetay(d){
          ['Pivot',ftl(t.pivot)],['R1',ftl(t.r1)],['S1',ftl(t.s1)]
         ].map(([l,v])=>`<div class="ti"><div class="tl">${l}</div><div class="tv">${v}</div></div>`).join('')}
     </div></div>
+    ${t.adx!=null?`<div class="card" style="margin-top:12px"><div class="ct">ADX — Trend Gücü</div><div class="tg">
+      <div class="ti"><div class="tl">ADX</div><div class="tv ${t.adx>50?'pos':t.adx>25?'neu':''}">${f2(t.adx)}</div></div>
+      <div class="ti"><div class="tl">+DI</div><div class="tv pos">${f2(t.pdi)}</div></div>
+      <div class="ti"><div class="tl">−DI</div><div class="tv neg">${f2(t.ndi)}</div></div>
+      <div class="ti" style="grid-column:span 3"><div class="tl">Yorum</div><div class="tv">${t.adx_yorum||'—'} ${t.pdi>t.ndi?'↑ Alıcı':'↓ Satıcı'}</div></div>
+    </div></div>`:''}
   </div>`;
 
   document.getElementById('tpMl').innerHTML=`<div class="detay fade-in">
@@ -714,6 +720,9 @@ async function renderGrafik(){
       <div style="display:flex;gap:4px;margin-left:8px">
         ${['1mo','3mo','6mo','1y','2y'].map(p=>`<button class="period-btn${p===_chartPeriod?' active':''}" onclick="secPeriod('${p}')">${p}</button>`).join('')}
       </div>
+      <div style="display:flex;gap:4px;margin-left:10px;border-left:1px solid var(--border);padding-left:10px">
+        ${['rsi','macd','bb'].map(ind=>`<button class="period-btn${ind===_chartInd?' active':''}" onclick="secInd('${ind}')">${ind.toUpperCase()}</button>`).join('')}
+      </div>
       <div id="chartOHLC" style="margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--text3)"></div>
     </div>
     <div id="chartMain"></div>
@@ -721,6 +730,9 @@ async function renderGrafik(){
       <div class="cl-item"><div class="cl-dot" style="background:#26a69a"></div><span>Mum</span></div>
       <div class="cl-item"><div class="cl-dot" style="background:#f59e0b"></div><span>SMA20</span></div>
       <div class="cl-item"><div class="cl-dot" style="background:#818cf8"></div><span>SMA50</span></div>
+      ${_chartInd==='macd'?'<div class="cl-item"><div class="cl-dot" style="background:#3b82f6"></div><span>MACD</span></div><div class="cl-item"><div class="cl-dot" style="background:#f59e0b"></div><span>Sinyal</span></div>':
+        _chartInd==='bb'?'<div class="cl-item"><div class="cl-dot" style="background:rgba(139,92,246,.7)"></div><span>Bollinger</span></div>':
+        '<div class="cl-item"><div class="cl-dot" style="background:#22d3ee"></div><span>RSI(14)</span></div>'}
     </div>
     <div id="rsiChart"></div>
   </div>`;
@@ -769,7 +781,7 @@ async function renderGrafik(){
     const sma50=_chartInst.addLineSeries({color:'#818cf8',lineWidth:1.5,priceLineVisible:false,lastValueVisible:false});
     sma50.setData(d.data.filter(b=>b.sma50).map(b=>({time:b.time,value:b.sma50})));
 
-    // RSI alt grafik
+    // Sub-chart (RSI / MACD / BB)
     const rsiEl=document.getElementById('rsiChart');
     rsiEl.style.height='100px';
     if(_rsiInst)try{_rsiInst.remove();}catch{}
@@ -778,10 +790,24 @@ async function renderGrafik(){
       rightPriceScale:{...chartOpts.rightPriceScale,scaleMargins:{top:0.1,bottom:0.1}},
       timeScale:{...chartOpts.timeScale,visible:false},
     });
-    const rsiSeries=_rsiInst.addLineSeries({color:'#22d3ee',lineWidth:1.5,priceLineVisible:false,lastValueVisible:true});
-    rsiSeries.setData(d.data.filter(b=>b.rsi!=null).map(b=>({time:b.time,value:b.rsi})));
-    rsiSeries.createPriceLine({price:70,color:'rgba(239,83,80,.5)',lineWidth:1,lineStyle:LightweightCharts.LineStyle.Dashed});
-    rsiSeries.createPriceLine({price:30,color:'rgba(38,166,154,.5)',lineWidth:1,lineStyle:LightweightCharts.LineStyle.Dashed});
+    if(_chartInd==='macd'){
+      const macdLine=_rsiInst.addLineSeries({color:'#3b82f6',lineWidth:1.5,priceLineVisible:false,lastValueVisible:true});
+      macdLine.setData(d.data.filter(b=>b.macd!=null).map(b=>({time:b.time,value:b.macd})));
+      const macdSig=_rsiInst.addLineSeries({color:'#f59e0b',lineWidth:1,priceLineVisible:false,lastValueVisible:false});
+      macdSig.setData(d.data.filter(b=>b.macd_s!=null).map(b=>({time:b.time,value:b.macd_s})));
+      const macdHist=_rsiInst.addHistogramSeries({priceScaleId:'',scaleMargins:{top:0,bottom:0}});
+      macdHist.setData(d.data.filter(b=>b.macd_h!=null).map(b=>({time:b.time,value:b.macd_h,color:b.macd_h>=0?'rgba(38,166,154,.6)':'rgba(239,83,80,.6)'})));
+    } else if(_chartInd==='bb'){
+      const bbU=_rsiInst.addLineSeries({color:'rgba(139,92,246,.7)',lineWidth:1,priceLineVisible:false,lastValueVisible:false});
+      bbU.setData(d.data.filter(b=>b.bb_u!=null).map(b=>({time:b.time,value:b.bb_u})));
+      const bbL=_rsiInst.addLineSeries({color:'rgba(139,92,246,.7)',lineWidth:1,priceLineVisible:false,lastValueVisible:false});
+      bbL.setData(d.data.filter(b=>b.bb_l!=null).map(b=>({time:b.time,value:b.bb_l})));
+    } else {
+      const rsiSeries=_rsiInst.addLineSeries({color:'#22d3ee',lineWidth:1.5,priceLineVisible:false,lastValueVisible:true});
+      rsiSeries.setData(d.data.filter(b=>b.rsi!=null).map(b=>({time:b.time,value:b.rsi})));
+      rsiSeries.createPriceLine({price:70,color:'rgba(239,83,80,.5)',lineWidth:1,lineStyle:LightweightCharts.LineStyle.Dashed});
+      rsiSeries.createPriceLine({price:30,color:'rgba(38,166,154,.5)',lineWidth:1,lineStyle:LightweightCharts.LineStyle.Dashed});
+    }
 
     // Sync scroll
     _chartInst.timeScale().subscribeVisibleTimeRangeChange(range=>{
@@ -806,6 +832,12 @@ async function renderGrafik(){
 
 function secPeriod(p){
   _chartPeriod=p;
+  const panel=document.getElementById('tpGrafik');
+  if(panel)panel._ld=false;
+  renderGrafik();
+}
+function secInd(ind){
+  _chartInd=ind;
   const panel=document.getElementById('tpGrafik');
   if(panel)panel._ld=false;
   renderGrafik();
@@ -963,6 +995,10 @@ function renderDuygu(panel){
       <div class="ct">Duygu Skoru</div>
       <div class="cv ${pc(dy.skor)}">${dy.seviye||'—'}</div>
       <div class="cs">${dy.pozitif||0} olumlu · ${dy.negatif||0} olumsuz</div>
+      ${dy.ai_ozet?`<div style="margin-top:10px;padding:9px 12px;background:var(--bg3);border-radius:7px;border-left:3px solid var(--accent);font-size:12px;line-height:1.6;color:var(--text2)">
+        <span style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--accent);font-weight:600;display:block;margin-bottom:4px">🤖 AI Özeti</span>
+        ${dy.ai_ozet}
+      </div>`:''}
     </div>
     ${hab.map(h=>`<div class="hitem">
       <div style="font-size:16px;flex-shrink:0">${h.duygu?.includes('POZ')?'😊':h.duygu?.includes('NEG')?'😟':'😐'}</div>

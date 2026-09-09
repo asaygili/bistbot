@@ -155,56 +155,6 @@ BIST50 = [
     "MAVI","NETAS",
 ]
 
-BIST50 = [
-    "AKBNK","ARCLK","ASELS","BIMAS","EKGYO","EREGL","FROTO","GARAN",
-    "HALKB","ISCTR","KCHOL","KOZAA","KOZAL","KRDMD","MGROS","PETKM",
-    "PGSUS","SAHOL","SASA","SISE","SOKM","TAVHL","TCELL","THYAO",
-    "TKFEN","TOASO","TTKOM","TUPRS","VAKBN","VESTL","YKBNK","AKSA",
-    "ALARK","ALFEN","ANHYT","AYGAZ","BAGFS","BRISA","CIMSA","DOAS",
-    "EGEEN","ENKAI","GESAN","GUBRF","HEKTS","ISDMR","ISGYO","LOGO",
-    "MAVI","NETAS",
-]
-
-BIST100_EK = [
-    "AEFES","AFYON","AGESA","AGHOL","AGYO","AHGAZ","AKFEN","AKMGY","AKSEN",
-    "ALBRK","ALFAS","ALTNY","ANSGR","APORT","ARKAS","ARMDA","ASGYO","ASTOR",
-    "AYDEM","AYEN","BAGFS","BASGZ","BERA","BFREN","BIGCH","BIOEN","BIZIM",
-    "BNTAS","BORDA","BRISA","BRYAT","BUCIM","BURCE","CANTE","CCOLA","CELHA",
-    "CEMAS","CEMTS","CIMSA","CLEBI","COKAL","CRDFA","CWENE","DEVA","DGNMO",
-    "DOAS","DOBUR","DOGUB","DOHOL","DORI","DURDO","DYOBY","DZGYO","ECILC",
-    "EGEEN","EGGUB","EGPRO","EGSER","EMKEL","EMNIS","ENKAI","ENSRI","ERBOS",
-    "ERSU","ESCAR","ESCOM","ETILR","ETYAT","EUPWR","EUREN","EYGYO","FADE",
-    "FENER","FLAP","FMIZP","FONET","FORMT","FORTE","FTURZ","GARAN","GARFA",
-    "GEDZA","GEREL","GLBMD","GLRYH","GMTAS","GOLTS","GOODY","GORBON","GSDDE",
-    "GSDHO","GSRAY","GUBRF","GWIND","HALKB","HATEK","HDFGS","HEDEF","HEKTS",
-    "HLGYO","HOROZ","HTTBT","HUNER","ICBCT","IDEAS","IEYHO","IHEVA","IHGZT",
-    "IHLAS","IHLGM","IHYAY","IMASM","INDES","INFO","INTEM","INVEO","IPEKE",
-    "ISATR","ISDMR","ISGSY","ISGYO","ISKPL","ISKUR","ISMEN","ISYAT","IZFAS",
-    "IZINV","IZMDC","JANTS","KAPLM","KARSN","KATMR","KAYSE","KCAER","KENT",
-    "KERVT","KFEIN","KGYO","KLGYO","KLKIM","KLMSN","KLNMA","KLRHO","KMPUR",
-    "KNFRT","KONKA","KONTR","KONYA","KOPOL","KORDS","KRSTL","KRTEK","KRVGD",
-    "KTLEV","KUTPO","KUYAS","LIDER","LIDFA","LKMNH","LOGO","LRSHO","LYKHO",
-    "MAALT","MACKO","MAGEN","MAKIM","MAKTK","MANAS","MAVI","MEDTR","MEGAP",
-    "MEGES","MEKAG","MERIT","MERKO","METRO","METUR","MIATK","MIGROS","MIPAZ",
-    "MMCAS","MNDRS","MNVRL","MOBTL","MOGAN","MPARK","MRDIN","MSDOS","MTRKS",
-    "NATEN","NETAS","NIBAS","NILYT","NTHOL","NTTUR","NUGYO","NUHCM","OBASE",
-    "ODAS","OFISM","OLMIP","ONCSM","ORCAY","ORGE","ORMA","OSMKB","OSTIM",
-    "OTKAR","OYAKC","OYLUM","OZGYO","OZKGY","PAPIL","PAREG","PEKGY","PENGD",
-    "PENTA","PETUN","PINSU","PKART","PKENT","PLTUR","POLHO","POLTK","PRDGS",
-    "PRZMA","PSDTC","PSGYO","QNBFB","QNBFL","RALYH","RAYSG","RGYAS","RHEAG",
-    "RNPOL","RODRG","RTALB","RUBNS","RYSAS","SAFKR","SANEL","SANFM","SANKO",
-    "SAYAS","SDTTR","SEGMN","SEKFK","SEKUR","SELEC","SELVA","SENTE","SEYKM",
-    "SILVR","SNGYO","SNKRN","SNPAM","SOKE","SONME","SRVGY","SUMAS","SUNTK",
-    "SUWEN","TABGD","TATGD","TDGYO","TEKTU","TETMT","TEZOL","TGSAS","TIRE",
-    "TKFEN","TLMAN","TMPOL","TMSN","TNZTP","TOASO","TRCAS","TRGYO","TRILC",
-    "TSPOR","TTRAK","TUCLK","TUKAS","TUMAS","TUREX","TURGG","TURSG","TUYAP",
-    "ULUUN","ULUSE","UMPAS","UNLU","USAK","USDAP","UTPYA","UZERB","VAKFN",
-    "VANGD","VBTS","VERTU","VERUS","VKGYO","VKFYO","YAPRK","YATAS","YBTAS",
-    "YEOTK","YESIL","YGYO","YIGIT","YKSLN","YUNSA","ZEDUR","ZOREN","ZRGYO",
-]
-
-# Model eğitimi için kullanılacak tüm hisseler
-
 YILDIZ_PAZAR = list(dict.fromkeys([
     "ACSEL","ADEL","ADESE","ADGYO","AKENR","AKGRT","AKMGY","AKSGY","ALCAR","ALGYO","ALKA","ALVES","ALYAG","ANGEN","APOLI","ARENA","ARSAN","ARTMS","ARZUM","ASGYO","ASLAN","ATEKS","ATSYH","AVHOL","AVOD","AYCES","AYES","AYGAZ","BABYO","BAKAB","BALAT","BANVT","BAYRK","BEGYO","BERA","BEYAZ","BFREN","BIGCH","BIOEN","BINHO","BITTM","BMELK","BMSCH","BMSTL","BNTAS","BORLS","BOSSA","BRKO","BSOKE","BUCIM","BURCE","BURVA","BVSAN","CASA","CEOEM","CMBTN","CMENT","CONSE","COSMO","CRDFA","CRFSA","CUSAN","DAGHL","DAPGM","DATA","DENGE","DERHL","DERIM","DESPC","DEVA","DGATE","DITAS","DMRGD","DNISI","DOBUR","DOCO","DOFER","DOGUB","DOHOL","DORE","DURDO","DYOBY","EDATA","EDIP","EFORC","EGPRO","EGGUB","EGSER","EKIZ","EKOS","ELITE","EMKEL","EMNIS","ENERY","ENSRI","EPLAS","ERBOS","ERSU","ESCAR","ESCOM","ESGYO","ETILR","ETYAT","EUREN","EYGYO","FADE","FENER","FLAP","FMIZP","FONET","FORMT","FORTE","FTURZ","GARFA","GEDZA","GEREL","GESAN","GLBMD","GLRYH","GLYHO","GMTAS","GOLTS","GOODY","GORBON","GSDDE","GSDHO","GSRAY","GWIND","HATEK","HDFGS","HLGYO","HOROZ","HTTBT","HUNER","ICBCT","IDEAS","IEYHO","IHEVA","IHGZT","IHLAS","IHLGM","IHYAY","IMASM","INFO","INTEM","INVEO","IPEKE","ISATR","ISGSY","ISKPL","ISKUR","ISMEN","ISYAT","IZFAS","IZINV","JANTS","KAPLM","KARSN","KATMR","KAYSE","KCAER","KENT","KERVT","KFEIN","KGYO","KLGYO","KLKIM","KLMSN","KLNMA","KLRHO","KMPUR","KNFRT","KONKA","KONTR","KONYA","KOPOL","KORDS","KRSTL","KRTEK","KRVGD","KTLEV","KUTPO","KUYAS","LIDER","LIDFA","LKMNH","LRSHO","LYKHO","MAALT","MACKO","MAGEN","MAKIM","MAKTK","MANAS","MEDTR","MEGAP","MEGES","MEKAG","MERIT","METUR","MIATK","MIGROS","MIPAZ","MMCAS","MNDRS","MNVRL","MOBTL","MOGAN","MRDIN","MSDOS","MTRKS","NATEN","NIBAS","NILYT","NTHOL","NTTUR","NUGYO","OBASE","OFISM","OLMIP","ONCSM","ORCAY","ORMA","OSMKB","OSTIM","OYLUM","OZGYO","OZKGY","PAPIL","PAREG","PEKGY","PINSU","PKART","PKENT","PLTUR","POLTK","PRDGS","PRZMA","PSDTC","QNBFB","QNBFL","RALYH","RAYSG","RGYAS","RHEAG","RNPOL","RODRG","RTALB","RUBNS","SAFKR","SAYAS","SDTTR","SEGMN","SEKFK","SEKUR","SELEC","SELVA","SEYKM","SNKRN","SNPAM","SOKE","SONME","SRVGY","SUMAS","SUNTK","SUWEN","TABGD","TATGD","TDGYO","TEKTU","TETMT","TEZOL","TGSAS","TIRE","TLMAN","TMPOL","TMSN","TNZTP","TRCAS","TRGYO","TRILC","TSPOR","TUCLK","TUMAS","TUREX","TURGG","TUYAP","ULUUN","UMPAS","UNLU","USDAP","UTPYA","UZERB","VANGD","VERTU","VERUS","VKFYO","YAPRK","YBTAS","YEOTK","YESIL","YGYO","YIGIT","YKSLN","ZEDUR","ZRGYO","ALTINS1","ASUZU","AFYON","AGYO","AHGAZ","APORT","ARMDA","BASGZ","BORDA",
 ]))
@@ -295,6 +245,18 @@ def _wr(h, l, c, n: int = 14) -> pd.Series:
 def _roc(s: pd.Series, n: int = 10) -> pd.Series:
     return (s / s.shift(n).replace(0, np.nan) - 1) * 100
 
+def _adx(h, l, c, n: int = 14):
+    """Average Directional Index. Returns (adx, +DI, -DI) series."""
+    tr  = pd.concat([h - l, (h - c.shift()).abs(), (l - c.shift()).abs()], axis=1).max(axis=1)
+    hd  = h.diff(); ld = -l.diff()
+    pdm = hd.where((hd > ld) & (hd > 0), 0.0)
+    ndm = ld.where((ld > hd) & (ld > 0), 0.0)
+    atr_n = tr.ewm(span=n, adjust=False).mean()
+    pdi   = 100 * pdm.ewm(span=n, adjust=False).mean() / (atr_n + 1e-9)
+    ndi   = 100 * ndm.ewm(span=n, adjust=False).mean() / (atr_n + 1e-9)
+    dx    = 100 * (pdi - ndi).abs() / (pdi + ndi + 1e-9)
+    return dx.ewm(span=n, adjust=False).mean(), pdi, ndi
+
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -372,6 +334,7 @@ def teknik_analiz(df: pd.DataFrame) -> dict:
     cci_s = _cci(h, l, c)
     wr_s  = _wr(h, l, c)
     roc_s = _roc(c)
+    adx_s, pdi_s, ndi_s = _adx(h, l, c)
 
     def v(s, i=-1): return _safe(s.iloc[i])
 
@@ -382,6 +345,7 @@ def teknik_analiz(df: pd.DataFrame) -> dict:
     atr_v = v(atr_s)
     cci_v = v(cci_s); wr_v = v(wr_s); roc_v = v(roc_s)
     obv_v = v(obv_s); obv_p = v(obv_s, -2)
+    adx_v = v(adx_s); pdi_v = v(pdi_s); ndi_v = v(ndi_s)
 
     s20 = v(_sma(c,20)); s50 = v(_sma(c,50)); s200 = v(_sma(c,200))
     e9  = v(_ema(c,9));  e21 = v(_ema(c,21))
@@ -436,6 +400,12 @@ def teknik_analiz(df: pd.DataFrame) -> dict:
     # ROC momentum
     puanlar.append(np.clip(roc_v / 10, -0.5, 0.5))
 
+    # ADX trend confirmation
+    if adx_v > 25:
+        puanlar.append(np.clip((pdi_v - ndi_v) / 50, -0.5, 0.5))
+    else:
+        puanlar.append(0.0)
+
     teknik_skor = float(np.clip(np.mean(puanlar), -1, 1))
 
     # Pivot noktaları
@@ -466,6 +436,10 @@ def teknik_analiz(df: pd.DataFrame) -> dict:
         "r1": round(r1, 2),
         "s1": round(s1, 2),
         "obv_trend": "YUKARI" if obv_v > obv_p else "ASAGI",
+        "adx": round(adx_v, 2),
+        "pdi": round(pdi_v, 2),
+        "ndi": round(ndi_v, 2),
+        "adx_yorum": ("Güçlü Trend" if adx_v > 50 else "Trend" if adx_v > 25 else "Yatay"),
     }
 
 
@@ -647,6 +621,28 @@ def gnews_cek(sembol: str, sirket: str = "") -> list:
         except: pass
     return haberler[:10]
 
+def _groq_ozet(haberler: list, sembol: str) -> str:
+    """Groq LLM ile Türkçe haber özeti (GROQ_API_KEY yoksa boş string döner)."""
+    if not GROQ_API_KEY or not haberler:
+        return ""
+    try:
+        headlines = "\n".join(f"- {h['baslik']}" for h in haberler[:6])
+        body = json.dumps({
+            "model": "llama-3.1-8b-instant",
+            "messages": [{"role": "user", "content":
+                f"BIST hissesi {sembol} için aşağıdaki haberleri analiz et ve 1-2 cümleyle piyasa duygu özeti yaz (Türkçe, kısa):\n{headlines}"}],
+            "max_tokens": 120, "temperature": 0.3,
+        })
+        req = Request(
+            "https://api.groq.com/openai/v1/chat/completions",
+            data=body.encode(),
+            headers={"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"},
+        )
+        with urlopen(req, timeout=6) as r:
+            return json.loads(r.read().decode())["choices"][0]["message"]["content"].strip()
+    except:
+        return ""
+
 def duygu_analizi(sembol: str, sirket: str, df: pd.DataFrame) -> dict:
     haberler = []
     try: haberler = gnews_cek(sembol, sirket)
@@ -680,8 +676,10 @@ def duygu_analizi(sembol: str, sirket: str, df: pd.DataFrame) -> dict:
             "duygu": "😊 POZİTİF" if p>0.1 else "😟 NEGATİF" if p<-0.1 else "😐 NÖTR",
             "skor": round(p, 2)})
 
+    ai_ozet = _groq_ozet(haberler, sembol)
     return {"skor": round(skor,4), "seviye": seviye, "haberler": etiketli,
-            "pozitif": poz, "negatif": neg, "yontem": "kelime"}
+            "pozitif": poz, "negatif": neg, "yontem": "kelime",
+            "ai_ozet": ai_ozet}
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1266,11 +1264,15 @@ def ml_analiz(df: pd.DataFrame, sembol: str = "") -> dict:
         ol      = {int(c): float(p) for c, p in zip(model.meta.classes_, proba)}
         ml_skor = ol.get(1, 0) - ol.get(-1, 0)
         sinif   = model.meta.predict(mf)[0]
+        try:
+            getiri = float(model.k2.predict(Xs)[0])
+        except Exception:
+            getiri = 0.0
         return {
             "ml_skor":        round(float(ml_skor), 4),
             "ml_sinyal":      {1:"AL",-1:"SAT",0:"TUT"}.get(int(sinif),"TUT"),
             "olasilik":       {k: round(v,4) for k,v in ol.items()},
-            "getiri_tahmini": 0,
+            "getiri_tahmini": round(getiri * 100, 2),
             "dogruluk":       model.dogruluk,
             "top5":           getattr(model, "cols_secili", [])[:5],
         }
@@ -1746,17 +1748,23 @@ def api_chart(sembol):
                     df[col] *= duz
 
         c  = df["Close"]
+        h_ = df["High"]; l_ = df["Low"]
         sma20_s = _sma(c, 20)
         sma50_s = _sma(c, 50)
         rsi_s   = _rsi(c, 14)
+        macd_l, macd_s_ser, macd_h_ser = _macd(c)
+        bbu_s, _bbm, bbl_s = _boll(c, 20)
 
         candles = []
         for i, (idx, row) in enumerate(df.iterrows()):
             try:
-                ts = int(idx.timestamp())
-                s20 = float(sma20_s.iloc[i])
-                s50 = float(sma50_s.iloc[i])
+                ts  = int(idx.timestamp())
+                s20 = float(sma20_s.iloc[i]); s50 = float(sma50_s.iloc[i])
                 ri  = float(rsi_s.iloc[i])
+                mc  = float(macd_l.iloc[i]); ms = float(macd_s_ser.iloc[i]); mh = float(macd_h_ser.iloc[i])
+                bbu_v = float(bbu_s.iloc[i]); bbl_v = float(bbl_s.iloc[i])
+                def _r2(x): return round(x, 2) if math.isfinite(x) else None
+                def _r4(x): return round(x, 4) if math.isfinite(x) else None
                 candles.append({
                     "time":   ts,
                     "open":   round(float(row["Open"]),  2),
@@ -1764,9 +1772,10 @@ def api_chart(sembol):
                     "low":    round(float(row["Low"]),   2),
                     "close":  round(float(row["Close"]), 2),
                     "volume": int(row.get("Volume", 0) or 0),
-                    "sma20":  round(s20, 2) if math.isfinite(s20) else None,
-                    "sma50":  round(s50, 2) if math.isfinite(s50) else None,
-                    "rsi":    round(ri,  2) if math.isfinite(ri)  else None,
+                    "sma20":  _r2(s20), "sma50": _r2(s50),
+                    "rsi":    _r2(ri),
+                    "macd":   _r4(mc), "macd_s": _r4(ms), "macd_h": _r4(mh),
+                    "bb_u":   _r2(bbu_v), "bb_l": _r2(bbl_v),
                 })
             except Exception:
                 pass
