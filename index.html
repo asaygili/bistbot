@@ -231,6 +231,98 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 /* ── Dark Mode Toggle ────────────────────────────────────────── */
 .dm-btn{font-size:16px;}
 
+/* ── Verdict Card ────────────────────────────────────────────── */
+.verdict-card{border-radius:var(--r);padding:18px 20px;position:relative;overflow:hidden;}
+.verdict-ga{background:linear-gradient(135deg,#064e3b,#065f46);border:1px solid #047857;color:#ecfdf5;}
+.verdict-al{background:linear-gradient(135deg,#065f46,#047857);border:1px solid #10b981;color:#ecfdf5;}
+.verdict-tt{background:var(--bg2);border:1px solid var(--border);}
+.verdict-st{background:linear-gradient(135deg,#7f1d1d,#991b1b);border:1px solid #b91c1c;color:#fef2f2;}
+.verdict-gs{background:linear-gradient(135deg,#450a0a,#7f1d1d);border:1px solid #dc2626;color:#fef2f2;}
+:root:not([data-theme="dark"]) .verdict-ga{background:linear-gradient(135deg,#d1fae5,#a7f3d0);border-color:#6ee7b7;color:#064e3b;}
+:root:not([data-theme="dark"]) .verdict-al{background:linear-gradient(135deg,#ecfdf5,#d1fae5);border-color:#6ee7b7;color:#065f46;}
+:root:not([data-theme="dark"]) .verdict-tt{background:var(--bg2);border-color:var(--border);}
+:root:not([data-theme="dark"]) .verdict-st{background:linear-gradient(135deg,#fef2f2,#fee2e2);border-color:#fca5a5;color:#7f1d1d;}
+:root:not([data-theme="dark"]) .verdict-gs{background:linear-gradient(135deg,#fff1f2,#ffe4e6);border-color:#fca5a5;color:#450a0a;}
+.verdict-sig{font-family:var(--mono);font-size:30px;font-weight:700;letter-spacing:-.02em;}
+.verdict-score-row{display:flex;align-items:center;gap:12px;margin-top:6px;}
+.verdict-score{font-size:12px;opacity:.8;}
+.verdict-bar{flex:1;height:5px;background:rgba(0,0,0,.15);border-radius:3px;overflow:hidden;}
+.verdict-fill{height:100%;border-radius:3px;transition:width .5s;}
+.verdict-fill-pos{background:rgba(255,255,255,.7);}
+.verdict-fill-neg{background:rgba(255,100,100,.7);}
+.verdict-tt .verdict-bar{background:var(--bg4);}
+.verdict-tt .verdict-fill-pos{background:var(--green);}
+.verdict-tt .verdict-fill-neg{background:var(--red);}
+.verdict-ai{background:rgba(0,0,0,.18);border-radius:8px;padding:10px 13px;margin-top:13px;display:flex;gap:8px;align-items:flex-start;font-size:12px;line-height:1.55;}
+.verdict-tt .verdict-ai{background:var(--bg3);}
+.verdict-ai-icon{flex-shrink:0;font-size:14px;}
+.verdict-ai-text{opacity:.95;}
+
+/* ── Vade Grid ───────────────────────────────────────────────── */
+.vade-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.vade-card{border-radius:var(--r);border:1px solid var(--border);padding:14px;background:var(--bg2);}
+.vade-pos{border-left:3px solid var(--green);}
+.vade-neg{border-left:3px solid var(--red2);}
+.vade-neu{border-left:3px solid var(--yellow);}
+.vade-title{font-size:9px;text-transform:uppercase;letter-spacing:.8px;font-weight:700;color:var(--text3);margin-bottom:4px;}
+.vade-sub{font-size:10px;color:var(--text3);margin-bottom:8px;}
+.vade-karar{font-size:13px;font-weight:700;color:var(--text);margin-bottom:8px;line-height:1.25;}
+.vsig{font-size:11px;color:var(--text2);padding:3px 0;border-top:1px solid var(--border);line-height:1.4;}
+.vsig:first-child{border-top:none;}
+.vsig-pos::before{content:'↑ ';color:var(--green);font-weight:700;}
+.vsig-neg::before{content:'↓ ';color:var(--red2);font-weight:700;}
+.vsig-neu::before{content:'→ ';color:var(--text3);}
+
+/* ── Price Levels ────────────────────────────────────────────── */
+.pl-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);}
+.pl-row:last-child{border-bottom:none;}
+.pl-tag{font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;letter-spacing:.04em;min-width:36px;text-align:center;flex-shrink:0;}
+.tag-hedef{background:var(--green);color:#fff;}
+.tag-direnc{background:rgba(239,68,68,.12);color:var(--red2);border:1px solid rgba(239,68,68,.2);}
+.tag-stop{background:var(--red);color:#fff;}
+.tag-destek{background:rgba(16,185,129,.12);color:var(--green);border:1px solid rgba(16,185,129,.2);}
+.pl-price{font-family:var(--mono);font-size:14px;font-weight:600;flex:1;}
+.pl-pct{font-family:var(--mono);font-size:11px;margin-left:auto;}
+.pl-desc{font-size:11px;color:var(--text3);margin-left:auto;}
+.pl-current{font-family:var(--mono);font-size:22px;font-weight:600;margin-bottom:6px;}
+.pl-current small{font-size:12px;font-weight:400;color:var(--text2);font-family:var(--sans);margin-left:8px;}
+.pl-ro{display:flex;align-items:center;gap:16px;padding-top:8px;font-size:12px;border-top:1px solid var(--border);margin-top:4px;}
+
+/* ── Teknik Açıklama ─────────────────────────────────────────── */
+.ind-summary{margin-top:10px;padding:10px 12px;background:var(--bg3);border-radius:var(--r2);font-size:11px;color:var(--text2);line-height:1.6;}
+.ind-summary b{color:var(--text);}
+
+/* ── Chat Paneli ─────────────────────────────────────────────── */
+.chat-fab{position:fixed;bottom:24px;right:24px;width:52px;height:52px;border-radius:50%;background:var(--accent);color:#fff;border:none;font-size:20px;cursor:pointer;z-index:300;box-shadow:0 4px 16px rgba(37,99,235,.4);transition:all .2s;}
+.chat-fab:hover{transform:scale(1.08);}
+.chat-panel{position:fixed;right:20px;bottom:86px;width:360px;max-height:480px;background:var(--bg2);border:1px solid var(--border);border-radius:14px;z-index:299;box-shadow:0 8px 40px rgba(0,0,0,.18);display:flex;flex-direction:column;overflow:hidden;transform:scale(.95) translateY(12px);opacity:0;pointer-events:none;transition:all .2s;}
+.chat-panel.open{transform:scale(1) translateY(0);opacity:1;pointer-events:all;}
+.chat-ph{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--bg2);}
+.chat-ph-title{font-size:13px;font-weight:600;}
+.chat-ph-sub{font-size:11px;color:var(--text3);margin-top:1px;}
+.chat-close{background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;padding:2px 6px;border-radius:4px;}
+.chat-close:hover{background:var(--bg3);color:var(--text);}
+.chat-history{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px;min-height:120px;}
+.chat-hint{font-size:12px;color:var(--text3);text-align:center;padding:16px;line-height:1.6;}
+.chat-msg{max-width:88%;padding:9px 13px;border-radius:10px;font-size:12px;line-height:1.55;}
+.chat-msg.user{align-self:flex-end;background:var(--accent);color:#fff;border-radius:10px 10px 2px 10px;}
+.chat-msg.ai{align-self:flex-start;background:var(--bg3);color:var(--text);border-radius:10px 10px 10px 2px;border:1px solid var(--border);}
+.chat-msg.thinking{color:var(--text3);font-style:italic;}
+.chat-input-wrap{display:flex;gap:8px;padding:10px 12px;border-top:1px solid var(--border);background:var(--bg2);}
+.chat-input{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-family:var(--sans);font-size:13px;color:var(--text);outline:none;transition:border-color .15s;}
+.chat-input:focus{border-color:var(--accent);}
+.chat-send{background:var(--accent);color:#fff;border:none;border-radius:8px;width:36px;flex-shrink:0;font-size:17px;cursor:pointer;transition:background .15s;}
+.chat-send:hover{background:var(--accent2);}
+
+/* ── ML Gösterge ─────────────────────────────────────────────── */
+.ml-meter{margin-top:12px;}
+.ml-bar-wrap{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.ml-bar-label{font-size:11px;color:var(--text2);width:28px;text-align:right;flex-shrink:0;}
+.ml-bar-track{flex:1;height:8px;background:var(--bg4);border-radius:4px;overflow:hidden;}
+.ml-bar-fill{height:100%;border-radius:4px;transition:width .5s;}
+.ml-bar-val{font-family:var(--mono);font-size:11px;width:32px;flex-shrink:0;font-weight:600;}
+.ml-verdict{text-align:center;padding:12px;border-radius:var(--r2);background:var(--bg3);margin-top:10px;font-size:12px;color:var(--text2);line-height:1.55;}
+
 @media(max-width:768px){
   .layout{grid-template-columns:1fr;}
   .sidebar{display:none;position:fixed;top:54px;left:0;bottom:0;width:260px;z-index:200;box-shadow:0 4px 24px rgba(0,0,0,.15);}
@@ -246,6 +338,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
   .port-form-grid{grid-template-columns:1fr 1fr;}
   .port-summary{grid-template-columns:1fr 1fr;}
   .chart-toolbar{gap:4px;}
+  .vade-grid{grid-template-columns:1fr;}
+  .chat-panel{right:8px;left:8px;width:auto;}
+  .chat-fab{bottom:16px;right:16px;}
 }
 ::-webkit-scrollbar{width:5px;height:5px;}
 ::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px;}
@@ -255,6 +350,25 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 <div class="pw" id="pw"><div class="pf" id="pf" style="width:0%"></div></div>
 <div class="mob-ov" id="mobOv" onclick="toggleSb()"></div>
 <div class="toast" id="toast"></div>
+
+<!-- Chat Panel -->
+<div class="chat-panel" id="chatPanel">
+  <div class="chat-ph">
+    <div>
+      <div class="chat-ph-title">💬 Trader AI</div>
+      <div class="chat-ph-sub" id="chatSub">Hisse seçin</div>
+    </div>
+    <button class="chat-close" onclick="toggleChat()">✕</button>
+  </div>
+  <div class="chat-history" id="chatHistory">
+    <div class="chat-hint">50 yıllık deneyimli BIST traderı gibi yanıt verir.<br>Al/sat kararı, fiyat hedefi, risk yönetimi hakkında sorabilirsiniz.</div>
+  </div>
+  <div class="chat-input-wrap">
+    <input class="chat-input" id="chatInput" type="text" placeholder="Soru sor… (örn: Bu hisseyi almalı mıyım?)" onkeydown="if(event.key==='Enter')chatGonder()">
+    <button class="chat-send" onclick="chatGonder()">↑</button>
+  </div>
+</div>
+<button class="chat-fab" id="chatFab" onclick="toggleChat()" title="Trader AI" style="display:none">💬</button>
 
 <div class="topbar">
   <div class="logo">
@@ -602,26 +716,67 @@ function sekme(id,btn){
 }
 
 // ── DETAY ───────────────────────────────────────────────────────
+function verdictCls(k){
+  if(k==='GÜÇLÜ AL') return 'ga';
+  if(k==='AL') return 'al';
+  if(k==='SAT') return 'st';
+  if(k==='GÜÇLÜ SAT') return 'gs';
+  return 'tt';
+}
+
+function vadeCard(baslik, alt, vade){
+  if(!vade) return `<div class="vade-card"><div class="vade-title">${baslik}</div><div class="vade-sub">${alt}</div><div class="vade-karar" style="color:var(--text3)">— Hesaplanıyor</div></div>`;
+  const cls = vade.pozitif ? 'vade-pos' : (vade.puan < -2 ? 'vade-neg' : 'vade-neu');
+  const icon = vade.pozitif ? '✅' : '⚠️';
+  const sigs = (vade.sinyaller||[]).map(s=>`<div class="vsig vsig-${s.yon==='AL'?'pos':s.yon==='SAT'?'neg':'neu'}">${s.metin}</div>`).join('');
+  return `<div class="vade-card ${cls}">
+    <div class="vade-title">${baslik}</div>
+    <div class="vade-sub">${alt}</div>
+    <div class="vade-karar">${icon} ${vade.karar}</div>
+    ${sigs}
+  </div>`;
+}
+
+async function fetchTraderYorum(sembol){
+  const el = document.getElementById('aiYorum_'+sembol);
+  if(!el) return;
+  try {
+    const r = await fetch(api('/api/ai/trader_yorum/'+sembol));
+    const d = await r.json();
+    if(d.yorum) { el.textContent = d.yorum; }
+    else { el.closest('.verdict-ai').style.display='none'; }
+  } catch { el.closest('.verdict-ai')&&(el.closest('.verdict-ai').style.display='none'); }
+}
+
+function indYorum(label, val, rules){
+  for(const [cond, cls, text] of rules) if(cond) return `<span class="${cls}">${label} ${val.toFixed?val.toFixed(1):val}: ${text}</span>`;
+  return '';
+}
+
 function renderDetay(d){
   ['Kap','Duygu','Bt','Grafik'].forEach(id=>{const p=document.getElementById('tp'+id);if(p)p._ld=false;});
-  const t=d.teknik||{},an=d.analist||{},ar=d.arima||{};
-  const ol=d.ml_olasilik||{},kelly=d.kelly||{};
-  const pAL=((ol[1]||0)*100).toFixed(0);
-  const pNTR=((ol[0]||0)*100).toFixed(0);
-  const pSAT=((ol[-1]||0)*100).toFixed(0);
+  const t=d.teknik||{}, an=d.analist||{}, ar=d.arima||{};
+  const ol=d.ml_olasilik||{}, kelly=d.kelly||{}, vade=d.vade||{};
+  const pAL  = ((ol[1]||0)*100).toFixed(0);
+  const pNTR = ((ol[0]||0)*100).toFixed(0);
+  const pSAT = ((ol[-1]||0)*100).toFixed(0);
+  const vc   = verdictCls(d.karar);
+  const bsAbs = Math.min(Math.abs(d.birlesik||0)*100, 100).toFixed(0);
+  const fillCls = (d.birlesik||0) >= 0 ? 'verdict-fill-pos' : 'verdict-fill-neg';
 
+  // ── Analiz Sekmesi ─────────────────────────────────────────────
   document.getElementById('tpAnaliz').innerHTML=`<div class="detay fade-in">
+    <!-- Header -->
     <div class="dh">
       <div>
         <div class="dsym">${d.sembol}</div>
         <div class="dskt">${d.sirket||'—'}</div>
         ${d.sektor?`<div class="dsec">${d.sektor}</div>`:''}
       </div>
-      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
-        <div class="kbadge ${KBADGE[d.karar]||''}">${d.karar||'—'}</div>
-        <button class="btn btn-ghost" style="font-size:12px;padding:5px 10px" onclick="portEkleHizli('${d.sembol}',${d.fiyat})">+ Portföye Ekle</button>
-      </div>
+      <button class="btn btn-ghost" style="font-size:12px;padding:5px 10px;flex-shrink:0" onclick="portEkleHizli('${d.sembol}',${d.fiyat})">+ Portföye Ekle</button>
     </div>
+
+    <!-- Fiyat -->
     <div class="frow">
       <div class="fpx">${ftl(d.fiyat)}</div>
       <div class="fchg">
@@ -630,82 +785,234 @@ function renderDetay(d){
         <div class="fc"><span class="fcl">1A</span><span class="fcv ${pc(d.aylik)}">${fp(d.aylik)}</span></div>
       </div>
     </div>
-    <div class="card">
-      <div class="ct">Birleşik Skor</div>
-      ${[['BİRLEŞİK',d.birlesik],['TEKNİK %30',d.teknik_skor],['ML %30',d.ml_skor],
-         ['DUYGU %10',d.duygu_skor],['KAP %10',d.kap_skor||0],['TEMEL %10',d.temel_skor],
-         ['ANALİST %5',d.analist_skor||0],['ARIMA %5',d.arima_skor||0]
-        ].map(([l,s])=>`<div class="srow"><div class="sl">${l}</div>${sbH(s)}<div class="sval ${pc(s)}">${(s>=0?'+':'')+f2(s,3)}</div></div>`).join('')}
-    </div>
-    <div class="card">
-      <div class="ct">Risk & Hedef</div>
-      <div class="rg">
-        <div class="ri"><div class="rl">Hedef</div><div class="rv pos">${ftl(d.hedef)}</div></div>
-        <div class="ri"><div class="rl">Stop-Loss</div><div class="rv neg">${ftl(d.stop)}</div></div>
-        <div class="ri"><div class="rl">Risk/Ödül</div><div class="rv">${d.risk_odul>0?'1:'+f2(d.risk_odul,1):'—'}</div></div>
-        <div class="ri"><div class="rl">Kelly ½</div><div class="rv" style="color:var(--accent)">${kelly.yari_kelly>0?'%'+(kelly.yari_kelly*100).toFixed(0):'—'}</div></div>
+
+    <!-- Karar Kartı -->
+    <div class="verdict-card verdict-${vc}">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+        <div class="verdict-sig">${d.karar||'—'}</div>
+        <div style="text-align:right;font-size:11px;opacity:.75;line-height:1.4">
+          Skor<br><b style="font-family:var(--mono);font-size:15px">${(d.birlesik>=0?'+':'')+f2(d.birlesik,3)}</b>
+        </div>
+      </div>
+      <div class="verdict-score-row">
+        <span class="verdict-score">Güven: ${bsAbs}%</span>
+        <div class="verdict-bar"><div class="verdict-fill ${fillCls}" style="width:${bsAbs}%"></div></div>
+      </div>
+      <div class="verdict-ai">
+        <span class="verdict-ai-icon">💡</span>
+        <span class="verdict-ai-text" id="aiYorum_${d.sembol}">Trader yorumu yükleniyor…</span>
       </div>
     </div>
+
+    <!-- Vade Analizi -->
+    <div class="vade-grid">
+      ${vadeCard('KISA VADE','1–2 Hafta',vade.kisa)}
+      ${vadeCard('UZUN VADE','1–3 Ay',vade.uzun)}
+    </div>
+
+    <!-- Fiyat Seviyeleri -->
+    <div class="card">
+      <div class="ct">Kritik Fiyat Seviyeleri</div>
+      <div class="pl-current">${ftl(d.fiyat)} <small>${d.sirket||''}</small></div>
+      <div class="pl-row">
+        <span class="pl-tag tag-hedef">HEDEF</span>
+        <span class="pl-price pos">${ftl(d.hedef)}</span>
+        <span class="pl-pct pos">${fp((d.hedef/d.fiyat-1)*100,1)}</span>
+      </div>
+      ${t.bb_ust?`<div class="pl-row">
+        <span class="pl-tag tag-direnc">BB↑</span>
+        <span class="pl-price">${ftl(t.bb_ust)}</span>
+        <span class="pl-desc">Bollinger Üst Band</span>
+      </div>`:''}
+      ${t.r1?`<div class="pl-row">
+        <span class="pl-tag tag-direnc">DİR-1</span>
+        <span class="pl-price">${ftl(t.r1)}</span>
+        <span class="pl-desc">Pivot Direnci</span>
+      </div>`:''}
+      <div class="pl-row">
+        <span class="pl-tag tag-stop">STOP</span>
+        <span class="pl-price neg">${ftl(d.stop)}</span>
+        <span class="pl-pct neg">${fp((d.stop/d.fiyat-1)*100,1)}</span>
+      </div>
+      ${t.s1?`<div class="pl-row">
+        <span class="pl-tag tag-destek">DES-1</span>
+        <span class="pl-price">${ftl(t.s1)}</span>
+        <span class="pl-desc">Pivot Desteği</span>
+      </div>`:''}
+      ${t.sma50?`<div class="pl-row">
+        <span class="pl-tag tag-destek">SMA50</span>
+        <span class="pl-price">${ftl(t.sma50)}</span>
+        <span class="pl-desc">50 Günlük Ortalama</span>
+      </div>`:''}
+      <div class="pl-ro">
+        <span style="color:var(--text3)">Risk/Ödül</span>
+        <span style="font-family:var(--mono);font-weight:700">${d.risk_odul>0?'1:'+f2(d.risk_odul,1):'—'}</span>
+        <span style="color:var(--text3);margin-left:8px">Kelly ½</span>
+        <span style="font-family:var(--mono);font-weight:700;color:var(--accent)">${kelly.yari_kelly>0?'%'+(kelly.yari_kelly*100).toFixed(0):'—'}</span>
+      </div>
+    </div>
+
+    <!-- Skor Dağılımı -->
+    <div class="card">
+      <div class="ct">Skor Dağılımı (7 Katman)</div>
+      ${[['TEKNİK %30',d.teknik_skor],['ML %30',d.ml_skor],['DUYGU %10',d.duygu_skor],
+         ['KAP %10',d.kap_skor||0],['TEMEL %10',d.temel_skor],['ANALİST %5',d.analist_skor||0],['ARIMA %5',d.arima_skor||0]
+        ].map(([l,s])=>`<div class="srow"><div class="sl">${l}</div>${sbH(s)}<div class="sval ${pc(s)}">${(s>=0?'+':'')+f2(s,3)}</div></div>`).join('')}
+    </div>
+
+    <!-- Analist & ARIMA -->
     <div class="g2">
       <div class="card">
-        <div class="ct">Analist</div>
+        <div class="ct">Analist Konsensüsü</div>
         <div style="font-weight:600;margin-bottom:4px">${an.oneri||'Veri yok'}</div>
         ${an.hedef_fiyat?`<div class="cs">Hedef: ${ftl(an.hedef_fiyat)}</div>`:''}
         ${an.potansiyel!=null?`<div class="cs ${pc(an.potansiyel)}">${fp(an.potansiyel)}</div>`:''}
       </div>
       <div class="card">
-        <div class="ct">ARIMA (${ar.gun||10}g)</div>
+        <div class="ct">ARIMA Tahmini (${ar.gun||10}g)</div>
         <div style="font-weight:600;color:var(--cyan);margin-bottom:4px">${ar.tahmini_fiyat?ftl(ar.tahmini_fiyat):'—'}</div>
         ${ar.potansiyel!=null?`<div class="cs ${pc(ar.potansiyel)}">${fp(ar.potansiyel)}</div>`:''}
         ${ar.guven!=null?`<div class="cs">Güven: %${(ar.guven*100).toFixed(0)}</div>`:''}
       </div>
     </div>
+
     ${d.temel&&Object.keys(d.temel).length?`<div class="card"><div class="ct">Temel Analiz</div><div class="tg">
       ${Object.entries(d.temel).slice(0,6).map(([k,v])=>`<div class="ti"><div class="tl">${k}</div><div class="tv">${v}</div></div>`).join('')}
     </div></div>`:''}
   </div>`;
 
-  document.getElementById('tpTeknik').innerHTML=`<div class="detay fade-in">
-    <div class="card"><div class="ct">Osilatörler</div><div class="tg">
-      ${[['RSI',f2(t.rsi),t.rsi<30?'pos':t.rsi>70?'neg':''],
-         ['MACD',f2(t.macd,4),t.macd>0?'pos':'neg'],
-         ['Stoch K',f2(t.stoch_k),t.stoch_k<20?'pos':t.stoch_k>80?'neg':''],
-         ['CCI',f2(t.cci),t.cci<-100?'pos':t.cci>100?'neg':''],
-         ['Williams',f2(t.williams_r),t.williams_r<-80?'pos':t.williams_r>-20?'neg':''],
-         ['ROC',f2(t.roc)+'%',t.roc>0?'pos':'neg']
-        ].map(([l,v,c])=>`<div class="ti"><div class="tl">${l}</div><div class="tv ${c}">${v}</div></div>`).join('')}
-    </div></div>
-    <div class="card" style="margin-top:12px"><div class="ct">Hareketli Ortalamalar</div><div class="tg">
-      ${[['SMA20',ftl(t.sma20)],['SMA50',ftl(t.sma50)],['SMA200',ftl(t.sma200)],
-         ['EMA9',ftl(t.ema9)],['EMA21',ftl(t.ema21)],['ATR',f2(t.atr,4)]
-        ].map(([l,v])=>`<div class="ti"><div class="tl">${l}</div><div class="tv">${v}</div></div>`).join('')}
-    </div></div>
-    <div class="card" style="margin-top:12px"><div class="ct">Bollinger & Pivot</div><div class="tg">
-      ${[['BB Üst',ftl(t.bb_ust)],['BB Alt',ftl(t.bb_alt)],['OBV',t.obv_trend||'—'],
-         ['Pivot',ftl(t.pivot)],['R1',ftl(t.r1)],['S1',ftl(t.s1)]
-        ].map(([l,v])=>`<div class="ti"><div class="tl">${l}</div><div class="tv">${v}</div></div>`).join('')}
-    </div></div>
-    ${t.adx!=null?`<div class="card" style="margin-top:12px"><div class="ct">ADX — Trend Gücü</div><div class="tg">
-      <div class="ti"><div class="tl">ADX</div><div class="tv ${t.adx>50?'pos':t.adx>25?'neu':''}">${f2(t.adx)}</div></div>
-      <div class="ti"><div class="tl">+DI</div><div class="tv pos">${f2(t.pdi)}</div></div>
-      <div class="ti"><div class="tl">−DI</div><div class="tv neg">${f2(t.ndi)}</div></div>
-      <div class="ti" style="grid-column:span 3"><div class="tl">Yorum</div><div class="tv">${t.adx_yorum||'—'} ${t.pdi>t.ndi?'↑ Alıcı':'↓ Satıcı'}</div></div>
-    </div></div>`:''}
-  </div>`;
+  // Groq trader yorum'unu arka planda getir
+  fetchTraderYorum(d.sembol);
 
-  document.getElementById('tpMl').innerHTML=`<div class="detay fade-in">
-    <div class="card"><div class="ct">ML Sinyali — <b>${d.ml_sinyal||'—'}</b></div>
-      <div class="proba">
-        <div class="pb pal"><div>${pAL}%</div><div class="pl">AL</div></div>
-        <div class="pb ptu"><div>${pNTR}%</div><div class="pl">TUT</div></div>
-        <div class="pb psa"><div>${pSAT}%</div><div class="pl">SAT</div></div>
+  // ── Teknik Sekmesi ─────────────────────────────────────────────
+  const rsi=t.rsi||0, macd=t.macd||0, macds=t.macd_sinyal||0;
+  const stk=t.stoch_k||0, cci=t.cci||0, wr=t.williams_r||0;
+  const adx=t.adx||0, pdi=t.pdi||0, ndi=t.ndi||0;
+  const fiyat=d.fiyat||0, s20=t.sma20||0, s50=t.sma50||0, s200=t.sma200||0;
+
+  const rsiYorum  = rsi<30?'🟢 Aşırı satım — alım fırsatı': rsi>70?'🔴 Aşırı alım — dikkat': rsi<45?'🟡 Alım bölgesine yakın':'🟡 Nötr bölge';
+  const macdYorum = macd>macds?'🟢 Sinyalin üzerinde — yukarı momentum':'🔴 Sinyalin altında — aşağı momentum';
+  const stkYorum  = stk<20?'🟢 Aşırı satım — kısa vadeli geri alım': stk>80?'🔴 Aşırı alım — düzeltme riski':'🟡 Nötr bölge';
+  const cciYorum  = cci<-100?'🟢 Aşırı satım bölgesi': cci>100?'🔴 Aşırı alım bölgesi':'🟡 Normal aralıkta';
+  const wrYorum   = wr<-80?'🟢 Aşırı satım': wr>-20?'🔴 Aşırı alım':'🟡 Nötr';
+  const obv       = t.obv_trend==='YUKARI'?'🟢 Yükseliyor — hacim alımı destekliyor':'🔴 Düşüyor — hacim satışı destekliyor';
+  const adxYorum  = adx>50?`🔵 Çok güçlü trend (${pdi>ndi?'alıcılar':'satıcılar'} baskın)`: adx>25?`🟡 Güçlü trend (${pdi>ndi?'+DI':'−DI'} baskın)`:'⚪ Trend zayıf / yatay piyasa';
+  const maYorum   = fiyat>s200&&s200>0?'🟢 SMA200 üzerinde — uzun vade pozitif':s200>0?'🔴 SMA200 altında — uzun vade baskı altında':'—';
+  const bbYorum   = t.bb_ust&&t.bb_alt&&fiyat?
+    (fiyat>t.bb_ust?'🔴 Üst banda yakın — aşırı alım': fiyat<t.bb_alt?'🟢 Alt banda yakın — aşırı satım':'🟡 Band içinde — nötr'):'—';
+
+  document.getElementById('tpTeknik').innerHTML=`<div class="detay fade-in">
+    <div class="card">
+      <div class="ct">Osilatörler — Ne anlama geliyor?</div>
+      <div class="tg">
+        ${[['RSI',f2(rsi),rsi<30?'pos':rsi>70?'neg':''],
+           ['MACD',f2(macd,4),macd>macds?'pos':'neg'],
+           ['Stoch K',f2(stk),stk<20?'pos':stk>80?'neg':''],
+           ['CCI',f2(cci),cci<-100?'pos':cci>100?'neg':''],
+           ['Williams',f2(wr),wr<-80?'pos':wr>-20?'neg':''],
+           ['ROC',f2(t.roc||0)+'%',(t.roc||0)>0?'pos':'neg']
+          ].map(([l,v,c])=>`<div class="ti"><div class="tl">${l}</div><div class="tv ${c}">${v}</div></div>`).join('')}
+      </div>
+      <div class="ind-summary">
+        <b>RSI ${f2(rsi)}:</b> ${rsiYorum}<br>
+        <b>MACD ${f2(macd,4)}:</b> ${macdYorum}<br>
+        <b>Stoch ${f2(stk)}:</b> ${stkYorum}<br>
+        <b>CCI ${f2(cci)}:</b> ${cciYorum} &nbsp;|&nbsp; <b>Williams:</b> ${wrYorum}<br>
+        <b>OBV:</b> ${obv}
       </div>
     </div>
-    <div class="g2" style="margin-top:12px">
-      <div class="card"><div class="ct">Doğruluk</div><div class="cv">${d.ml_dogruluk?'%'+(d.ml_dogruluk*100).toFixed(1):'—'}</div><div class="cs">10g ±%1.5</div></div>
-      <div class="card"><div class="ct">Tahmini Getiri</div><div class="cv ${pc(d.getiri_tahmini||0)}">${fp(d.getiri_tahmini)}</div></div>
+    <div class="card" style="margin-top:12px">
+      <div class="ct">Hareketli Ortalamalar — Trend Yönü</div>
+      <div class="tg">
+        ${[['SMA20',ftl(s20),fiyat>s20?'pos':'neg'],['SMA50',ftl(s50),fiyat>s50?'pos':'neg'],
+           ['SMA200',ftl(s200),fiyat>s200?'pos':'neg'],
+           ['EMA9',ftl(t.ema9||0),''],['EMA21',ftl(t.ema21||0),''],['ATR',f2(t.atr||0,2),'']
+          ].map(([l,v,c])=>`<div class="ti"><div class="tl">${l}</div><div class="tv ${c}">${v}</div></div>`).join('')}
+      </div>
+      <div class="ind-summary">
+        ${maYorum}<br>
+        <b>SMA50 (${ftl(s50)}):</b> ${fiyat>s50&&s50>0?'🟢 Üzerinde — orta vade pozitif':s50>0?'🔴 Altında — orta vade baskı':''}<br>
+        <b>SMA20 (${ftl(s20)}):</b> ${fiyat>s20&&s20>0?'🟢 Kısa vade: alıcılar baskın':s20>0?'🔴 Kısa vade: satıcılar baskın':''}
+      </div>
+    </div>
+    <div class="card" style="margin-top:12px">
+      <div class="ct">Bollinger Bantları & Pivot</div>
+      <div class="tg">
+        ${[['BB Üst',ftl(t.bb_ust||0)],['BB Alt',ftl(t.bb_alt||0)],['OBV',t.obv_trend||'—'],
+           ['Pivot',ftl(t.pivot||0)],['R1',ftl(t.r1||0)],['S1',ftl(t.s1||0)]
+          ].map(([l,v])=>`<div class="ti"><div class="tl">${l}</div><div class="tv">${v}</div></div>`).join('')}
+      </div>
+      <div class="ind-summary">
+        <b>Bollinger:</b> ${bbYorum}<br>
+        Fiyat Bollinger band içinde kalıyorsa <b>nötr</b>; üst banda değiyorsa <b>aşırı alım</b>, alt bandı zorluyorsa <b>aşırı satım</b> işareti.<br>
+        <b>Pivot:</b> R1 = birinci direnç, S1 = birinci destek. Kırılırsa trend güçlenir.
+      </div>
+    </div>
+    <div class="card" style="margin-top:12px">
+      <div class="ct">ADX — Trend Gücü</div>
+      <div class="tg">
+        <div class="ti"><div class="tl">ADX</div><div class="tv ${adx>50?'pos':adx>25?'neu':''}">${f2(adx)}</div></div>
+        <div class="ti"><div class="tl">+DI (Alıcı)</div><div class="tv pos">${f2(pdi)}</div></div>
+        <div class="ti"><div class="tl">−DI (Satıcı)</div><div class="tv neg">${f2(ndi)}</div></div>
+      </div>
+      <div class="ind-summary">
+        ${adxYorum}<br>
+        <b>Okuma kılavuzu:</b> ADX &lt; 20 → yatay piyasa (osilatörler daha güvenilir). ADX 20–25 → trend oluşuyor. ADX &gt; 25 → güçlü trend. ADX &gt; 50 → çok güçlü trend.<br>
+        +DI &gt; −DI ise alıcılar, −DI &gt; +DI ise satıcılar baskın.
+      </div>
     </div>
   </div>`;
+
+  // ── ML Sekmesi ─────────────────────────────────────────────────
+  const mlSig = d.ml_sinyal||'—';
+  const mlPoz = mlSig==='AL';
+  const mlNeg = mlSig==='SAT';
+  const getiri= d.getiri_tahmini||0;
+  const dogruluk = d.ml_dogruluk||0;
+
+  const mlAcik = mlPoz
+    ? `Makine öğrenmesi modeli 10 gün içinde %1.5'ten fazla yükseliş öngörüyor. Doğruluk oranı %${(dogruluk*100).toFixed(0)} olan bu model, geçmiş fiyat hareketlerini ve teknik indikatörleri birleştirerek tahmin üretir.`
+    : mlNeg
+    ? `Model 10 gün içinde %1.5'ten fazla düşüş öngörüyor. Bu sinyal, stop-loss seviyenizi gözden geçirmenizi işaret ediyor.`
+    : `Model 10 gün içinde net bir yön belirlemiyor. Nötr sinyallerde osilatörlere ve trende daha fazla ağırlık verin.`;
+
+  document.getElementById('tpMl').innerHTML=`<div class="detay fade-in">
+    <div class="card">
+      <div class="ct">Makine Öğrenmesi Sinyali</div>
+      <div style="display:flex;align-items:center;gap:14px;margin:8px 0 14px">
+        <div class="kbadge ${KBADGE[mlSig]||'kTT'}" style="font-size:16px;padding:10px 18px">${mlSig}</div>
+        <div>
+          <div style="font-size:13px;font-weight:600">10 Günlük Hedef</div>
+          <div class="cv ${pc(getiri)}" style="font-size:18px">${fp(getiri)}</div>
+          <div class="cs">±%1.5 eşik — Doğruluk: %${(dogruluk*100).toFixed(0)}</div>
+        </div>
+      </div>
+      <div class="ml-meter">
+        ${[['AL',pAL,'var(--green)'],[' TUT',pNTR,'var(--yellow)'],['SAT',pSAT,'var(--red)']].map(([lbl,val,color])=>
+          `<div class="ml-bar-wrap">
+            <div class="ml-bar-label">${lbl}</div>
+            <div class="ml-bar-track"><div class="ml-bar-fill" style="width:${val}%;background:${color}"></div></div>
+            <div class="ml-bar-val" style="color:${color}">%${val}</div>
+          </div>`
+        ).join('')}
+      </div>
+      <div class="ml-verdict">${mlAcik}</div>
+    </div>
+    ${d.ml_top5&&d.ml_top5.length?`<div class="card" style="margin-top:12px">
+      <div class="ct">En Etkili 5 Faktör</div>
+      ${d.ml_top5.map(([f,v])=>`<div class="srow">
+        <div class="sl" style="font-size:11px">${f}</div>
+        <div class="str"><div class="smid"></div><div class="sfil pos" style="width:${Math.abs(v)*50}%"></div></div>
+        <div class="sval">${f2(v,3)}</div>
+      </div>`).join('')}
+    </div>`:''}
+  </div>`;
+
+  // Chat butonunu göster
+  _chatSym = d.sembol;
+  const fab=document.getElementById('chatFab');
+  if(fab) fab.style.display='flex';
+  document.getElementById('chatSub').textContent = d.sembol + (d.sirket?' — '+d.sirket:'');
 }
 
 // ── GRAFİK ──────────────────────────────────────────────────────
@@ -1034,6 +1341,41 @@ async function renderBt(panel){
       </div>
     </div>`;
   }catch{panel.innerHTML='<div style="padding:20px;color:var(--red)">Bağlantı hatası</div>';}
+}
+
+// ── CHAT ────────────────────────────────────────────────────────
+let _chatSym=null;
+function toggleChat(){
+  const p=document.getElementById('chatPanel');
+  if(!p)return;
+  p.classList.toggle('open');
+}
+async function chatGonder(){
+  const inp=document.getElementById('chatInput');
+  const hist=document.getElementById('chatHistory');
+  if(!inp||!hist)return;
+  const soru=inp.value.trim();
+  if(!soru)return;
+  if(!_chatSym){showToast('Önce bir hisse seçin','warn');return;}
+  inp.value='';
+  hist.innerHTML+=`<div class="chat-msg user">${soru}</div>`;
+  hist.innerHTML+=`<div class="chat-msg thinking" id="chatThink">⏳ Düşünüyor…</div>`;
+  hist.scrollTop=hist.scrollHeight;
+  try{
+    const r=await fetch(api('/api/ai/sohbet'),{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({sembol:_chatSym,soru})
+    });
+    const d=await r.json();
+    const tk=document.getElementById('chatThink');
+    if(tk)tk.remove();
+    hist.innerHTML+=`<div class="chat-msg ai">${(d.cevap||d.hata||'Yanıt alınamadı').replace(/\n/g,'<br>')}</div>`;
+    hist.scrollTop=hist.scrollHeight;
+  }catch{
+    const tk=document.getElementById('chatThink');
+    if(tk)tk.textContent='Bağlantı hatası. Tekrar dene.';
+  }
 }
 
 // ── INIT ────────────────────────────────────────────────────────
