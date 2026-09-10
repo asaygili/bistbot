@@ -105,7 +105,9 @@ W = {
     "arima":    0.05,
 }
 
-GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
+GROQ_API_KEY    = os.environ.get("GROQ_API_KEY", "")
+GEMINI_API_KEY  = os.environ.get("GEMINI_API_KEY", "")
+AI_KEY          = GEMINI_API_KEY or GROQ_API_KEY  # Gemini öncelikli
 
 # ── Fiyat düzeltme çarpanları ─────────────────────────────────────────────────
 FIYAT_DUZELTME = {
@@ -650,29 +652,45 @@ def gnews_cek(sembol: str, sirket: str = "") -> list:
 
 GROQ_MODEL = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile")
 
-def _groq_post(messages: list, max_tokens: int = 280, temperature: float = 0.6) -> str:
-    """Central Groq API call using requests library."""
-    resp = requests.post(
-        "https://api.groq.com/openai/v1/chat/completions",
-        headers={"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"},
-        json={"model": GROQ_MODEL, "messages": messages, "max_tokens": max_tokens, "temperature": temperature},
-        timeout=15,
-    )
-    if not resp.ok:
-        try:
-            detail = resp.json()
-        except Exception:
-            detail = resp.text[:200]
-        raise Exception(f"Groq {resp.status_code}: {detail}")
-    return resp.json()["choices"][0]["message"]["content"].strip()
+def _llm_post(messages: list, max_tokens: int = 280, temperature: float = 0.6) -> str:
+    """LLM API call — Gemini öncelikli, yoksa Groq."""
+    if GEMINI_API_KEY:
+        # Gemini 1.5 Flash — ücretsiz tier
+        sys_parts = [{"text": m["content"]} for m in messages if m["role"] == "system"]
+        user_parts = [{"text": m["content"]} for m in messages if m["role"] in ("user", "assistant")]
+        body = {
+            "contents": [{"role": "user", "parts": user_parts or [{"text": "Merhaba"}]}],
+            "generationConfig": {"maxOutputTokens": max_tokens, "temperature": temperature},
+        }
+        if sys_parts:
+            body["system_instruction"] = {"parts": sys_parts}
+        resp = requests.post(
+            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}",
+            json=body, timeout=15,
+        )
+        if not resp.ok:
+            raise Exception(f"Gemini {resp.status_code}: {resp.text[:150]}")
+        return resp.json()["candidates"][0]["content"]["parts"][0]["text"].strip()
+    elif GROQ_API_KEY:
+        resp = requests.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            headers={"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"},
+            json={"model": GROQ_MODEL, "messages": messages, "max_tokens": max_tokens, "temperature": temperature},
+            timeout=15,
+        )
+        if not resp.ok:
+            raise Exception(f"Groq {resp.status_code}: {resp.json()}")
+        return resp.json()["choices"][0]["message"]["content"].strip()
+    else:
+        raise Exception("AI anahtarı yok")
 
 def _groq_ozet(haberler: list, sembol: str) -> str:
-    """Groq LLM ile Türkçe haber özeti (GROQ_API_KEY yoksa boş string döner)."""
-    if not GROQ_API_KEY or not haberler:
+    """LLM ile Türkçe haber özeti."""
+    if not AI_KEY or not haberler:
         return ""
     try:
         headlines = "\n".join(f"- {h['baslik']}" for h in haberler[:6])
-        return _groq_post([{"role": "user", "content":
+        return _llm_post([{"role": "user", "content":
             f"BIST hissesi {sembol} için aşağıdaki haberleri analiz et ve 1-2 cümleyle piyasa duygu özeti yaz (Türkçe, kısa):\n{headlines}"}],
             max_tokens=120, temperature=0.3)
     except:
@@ -1990,7 +2008,7 @@ def ai_trader_yorum(sembol):
         cached = _cache.get(sembol, {}).get("sonuc", {})
     if not cached:
         return jsonify({"yorum": ""})
-    if not GROQ_API_KEY:
+    if not AI_KEY:
         return jsonify({"yorum": ""})
     try:
         tek    = cached.get("teknik", {})
@@ -2012,7 +2030,7 @@ def ai_trader_yorum(sembol):
             f"RSI: {rsi:.1f} | MACD: {macd:+.4f} | ADX: {adx:.1f} | Stoch: {stoch:.0f} | {trend}\n"
             f"Kısa vadede (1-2 hafta) ne yapmalı? Net, 3 cümle max, Türkçe."
         )
-        yorum = _groq_post([{"role": "user", "content": prompt}], max_tokens=220, temperature=0.5)
+        yorum = _llm_post([{"role": "user", "content": prompt}], max_tokens=220, temperature=0.5)
         return jsonify({"yorum": yorum})
     except Exception as e:
         return jsonify({"yorum": ""})
@@ -2025,8 +2043,8 @@ def ai_sohbet():
     soru   = (data.get("soru") or "").strip()
     if not soru:
         return jsonify({"cevap": "Soru boş."})
-    if not GROQ_API_KEY:
-        return jsonify({"cevap": "Groq API anahtarı yapılandırılmamış. Render.com'da GROQ_API_KEY ortam değişkeni ekleyin."})
+    if not AI_KEY:
+        return jsonify({"cevap": "AI anahtarı yapılandırılmamış. Render.com'da GEMINI_API_KEY veya GROQ_API_KEY ekleyin."})
     with _cache_lock:
         cached = _cache.get(sembol, {}).get("sonuc", {})
     tek    = cached.get("teknik", {})
@@ -2045,19 +2063,15 @@ def ai_sohbet():
         f"Türkçe, max 4 cümle. Net ve pratik."
     )
     try:
-        cevap = _groq_post([
+        cevap = _llm_post([
             {"role": "system", "content": sistem},
             {"role": "user", "content": soru},
         ], max_tokens=280, temperature=0.6)
         return jsonify({"cevap": cevap})
     except Exception as e:
         err = str(e)
-        if "401" in err:
-            return jsonify({"cevap": "Groq API anahtarı geçersiz. Render.com Environment'tan GROQ_API_KEY değerini kontrol edin."})
-        if "403" in err:
-            return jsonify({"cevap": "Groq erişim reddetti (403). API anahtarı geçerli mi? console.groq.com'dan kontrol edin."})
         if "429" in err:
-            return jsonify({"cevap": "Groq istek limiti doldu, biraz bekleyip tekrar deneyin."})
+            return jsonify({"cevap": "İstek limiti doldu, biraz bekleyip tekrar deneyin."})
         return jsonify({"cevap": f"Hata: {err[:200]}"})
 
 
