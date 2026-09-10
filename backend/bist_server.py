@@ -658,7 +658,12 @@ def _groq_post(messages: list, max_tokens: int = 280, temperature: float = 0.6) 
         json={"model": GROQ_MODEL, "messages": messages, "max_tokens": max_tokens, "temperature": temperature},
         timeout=15,
     )
-    resp.raise_for_status()
+    if not resp.ok:
+        try:
+            detail = resp.json()
+        except Exception:
+            detail = resp.text[:200]
+        raise Exception(f"Groq {resp.status_code}: {detail}")
     return resp.json()["choices"][0]["message"]["content"].strip()
 
 def _groq_ozet(haberler: list, sembol: str) -> str:
@@ -2053,9 +2058,7 @@ def ai_sohbet():
             return jsonify({"cevap": "Groq erişim reddetti (403). API anahtarı geçerli mi? console.groq.com'dan kontrol edin."})
         if "429" in err:
             return jsonify({"cevap": "Groq istek limiti doldu, biraz bekleyip tekrar deneyin."})
-        if "400" in err:
-            return jsonify({"cevap": f"Groq model hatası (400). Lütfen bir dakika bekleyip tekrar deneyin."})
-        return jsonify({"cevap": f"Hata: {err[:100]}"})
+        return jsonify({"cevap": f"Hata: {err[:200]}"})
 
 
 @app.route("/api/ping")
