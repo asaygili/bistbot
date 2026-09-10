@@ -44,8 +44,35 @@ from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from sklearn.utils import resample
 
 import yfinance as yf
+import requests
 
 warnings.filterwarnings("ignore")
+
+# ── yfinance 403 workaround ───────────────────────────────────────────────────
+def _yf_session():
+    """Return a requests Session that bypasses Yahoo Finance 403 blocks."""
+    s = requests.Session()
+    s.headers.update({
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/125.0.0.0 Safari/537.36"
+        ),
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.5",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Connection": "keep-alive",
+    })
+    return s
+
+_YF_SESSION = _yf_session()
+
+def yf_ticker(sym: str):
+    """Create a yfinance Ticker with a persistent browser-like session."""
+    try:
+        return yf.Ticker(sym, session=_YF_SESSION)
+    except Exception:
+        return yf.Ticker(sym)
 
 # ── App ───────────────────────────────────────────────────────────────────────
 app = Flask(__name__)
@@ -280,7 +307,7 @@ def makro_guncelle():
     sonuc = {}
     for ad, sem in MAKRO_SEMBOLLER.items():
         try:
-            df = yf.Ticker(sem).history(period="3mo")
+            df = yf_ticker(sem).history(period="3mo")
             if df.empty: continue
             df.columns = [c[0] if isinstance(c, tuple) else c for c in df.columns]
             c = df["Close"].dropna()
@@ -1280,7 +1307,7 @@ def model_egit_ve_kaydet(hisseler: list = None) -> EnsembleModel:
 def _egitim_veri_cek(sem: str, makro_snap: dict):
     """Tek hisse için eğitim verisi çek — paralel çalışır."""
     try:
-        ticker = yf.Ticker(f"{sem}.IS")
+        ticker = yf_ticker(f"{sem}.IS")
         df = ticker.history(period="2y")
         if df.empty or len(df) < 120: return None
         df.columns = [c[0] if isinstance(c, tuple) else c for c in df.columns]
@@ -1544,7 +1571,7 @@ def hisse_analiz(sembol: str) -> dict:
                 return c["sonuc"]
 
     try:
-        ticker = yf.Ticker(f"{sembol}.IS")
+        ticker = yf_ticker(f"{sembol}.IS")
         df     = ticker.history(period="2y")
         if df.empty or len(df) < 100:
             return {"sembol": sembol, "hata": "Yeterli veri yok"}
@@ -1791,7 +1818,7 @@ def api_ml_egit():
 @app.route("/api/backtest/<sembol>")
 def api_backtest(sembol):
     try:
-        ticker = yf.Ticker(f"{sembol.upper()}.IS")
+        ticker = yf_ticker(f"{sembol.upper()}.IS")
         df = ticker.history(period="3y")
         if df.empty:
             return jsonify({"hata": "Veri yok"})
@@ -1822,7 +1849,7 @@ def api_chart(sembol):
     if period not in ["1mo", "3mo", "6mo", "1y", "2y"]:
         period = "6mo"
     try:
-        ticker = yf.Ticker(f"{sembol.upper()}.IS")
+        ticker = yf_ticker(f"{sembol.upper()}.IS")
         df = ticker.history(period=period)
         if df.empty:
             return jsonify({"hata": "Veri yok"})
@@ -1875,7 +1902,7 @@ def api_chart(sembol):
 @app.route("/api/arima/<sembol>")
 def api_arima(sembol):
     try:
-        ticker = yf.Ticker(f"{sembol.upper()}.IS")
+        ticker = yf_ticker(f"{sembol.upper()}.IS")
         df = ticker.history(period="1y")
         if df.empty: return jsonify({"hata": "Veri yok"})
         df.columns = [c[0] if isinstance(c, tuple) else c for c in df.columns]
