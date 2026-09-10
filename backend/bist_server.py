@@ -1610,6 +1610,10 @@ def portfolyo_kaydet(data: list):
 
 @app.route("/")
 def index():
+    root = os.path.join(os.path.dirname(__file__), "..")
+    idx  = os.path.join(root, "index.html")
+    if os.path.exists(idx):
+        return send_from_directory(os.path.abspath(root), "index.html")
     return jsonify({"status": "BIST Robot API v5.0", "docs": "/api/durum"})
 
 # ── Hisse analizi ─────────────────────────────────────────────────────────────

@@ -349,7 +349,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 // ── CONFIG ──────────────────────────────────────────────────────
 const BACKEND = (()=>{
   const h=location.hostname;
-  if(h==='localhost'||h==='127.0.0.1') return '';
+  if(h==='localhost'||h==='127.0.0.1'||h==='bistbot-ains.onrender.com') return '';
   return 'https://bistbot-ains.onrender.com';
 })();
 const api=p=>BACKEND+p;
