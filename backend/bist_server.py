@@ -664,12 +664,13 @@ def _llm_post(messages: list, max_tokens: int = 280, temperature: float = 0.6) -
         }
         if sys_parts:
             body["system_instruction"] = {"parts": sys_parts}
+        gemini_model = os.environ.get("GEMINI_MODEL", "gemini-2.0-flash-lite")
         resp = requests.post(
-            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}",
+            f"https://generativelanguage.googleapis.com/v1beta/models/{gemini_model}:generateContent?key={GEMINI_API_KEY}",
             json=body, timeout=15,
         )
         if not resp.ok:
-            raise Exception(f"Gemini {resp.status_code}: {resp.text[:150]}")
+            raise Exception(f"Gemini {resp.status_code}: {resp.text[:200]}")
         return resp.json()["candidates"][0]["content"]["parts"][0]["text"].strip()
     elif GROQ_API_KEY:
         resp = requests.post(
