@@ -643,6 +643,85 @@ def _groq_ozet(haberler: list, sembol: str) -> str:
     except:
         return ""
 
+def _kisa_uzun_vade(tek: dict, bs: float, ml_sinyal: str, fiyat: float) -> dict:
+    rsi = tek.get("rsi", 50); macd_v = tek.get("macd", 0); macd_s = tek.get("macd_sinyal", 0)
+    stoch_k = tek.get("stoch_k", 50); adx = tek.get("adx", 0); pdi = tek.get("pdi", 0)
+    ndi = tek.get("ndi", 0); sma50 = tek.get("sma50", fiyat); sma200 = tek.get("sma200", fiyat)
+    cci = tek.get("cci", 0); obv = tek.get("obv_trend", "")
+
+    kv = 0; kv_sig = []
+    if rsi < 30:
+        kv += 2; kv_sig.append({"yon": "AL", "metin": f"RSI {rsi:.0f} → Aşırı satım, geri dönüş yakın"})
+    elif rsi < 45:
+        kv += 1; kv_sig.append({"yon": "AL", "metin": f"RSI {rsi:.0f} → Alım bölgesine yakın"})
+    elif rsi > 70:
+        kv -= 2; kv_sig.append({"yon": "SAT", "metin": f"RSI {rsi:.0f} → Aşırı alım, düzeltme riski"})
+    elif rsi > 57:
+        kv -= 1; kv_sig.append({"yon": "NT", "metin": f"RSI {rsi:.0f} → Nötr güçlü, aşırı alıma yakın"})
+    else:
+        kv_sig.append({"yon": "NT", "metin": f"RSI {rsi:.0f} → Nötr bölge"})
+
+    if macd_v > macd_s:
+        kv += 1; kv_sig.append({"yon": "AL", "metin": "MACD sinyalin üzerinde → momentum pozitif"})
+    else:
+        kv -= 1; kv_sig.append({"yon": "SAT", "metin": "MACD sinyalin altında → momentum negatif"})
+
+    if stoch_k < 20:
+        kv += 1; kv_sig.append({"yon": "AL", "metin": f"Stoch {stoch_k:.0f} → Kısa vadeli geri alım sinyali"})
+    elif stoch_k > 80:
+        kv -= 1; kv_sig.append({"yon": "SAT", "metin": f"Stoch {stoch_k:.0f} → Kısa vadeli aşırı alım"})
+
+    if cci < -100:
+        kv += 1; kv_sig.append({"yon": "AL", "metin": f"CCI {cci:.0f} → Aşırı satım bölgesi"})
+    elif cci > 100:
+        kv -= 1; kv_sig.append({"yon": "SAT", "metin": f"CCI {cci:.0f} → Aşırı alım bölgesi"})
+
+    if obv == "YUKARI":
+        kv += 1; kv_sig.append({"yon": "AL", "metin": "OBV artıyor → hacim alımı destekliyor"})
+    elif obv:
+        kv -= 1; kv_sig.append({"yon": "SAT", "metin": "OBV düşüyor → hacim satışı destekliyor"})
+
+    if ml_sinyal == "AL": kv += 1
+    elif ml_sinyal == "SAT": kv -= 1
+
+    if kv >= 4:    kv_k = "GÜÇLÜ ALIM"
+    elif kv >= 2:  kv_k = "ALIM FIRSATI"
+    elif kv >= 0:  kv_k = "NÖTR / BEKLE"
+    elif kv >= -2: kv_k = "TEMKİNLİ"
+    else:          kv_k = "SATIM BASKISI"
+
+    uv = 0; uv_sig = []
+    if sma200 > 0 and fiyat > sma200:
+        uv += 2; uv_sig.append({"yon": "AL", "metin": f"SMA200 ({sma200:.2f} ₺) üzerinde → uzun vade pozitif"})
+    elif sma200 > 0:
+        uv -= 2; uv_sig.append({"yon": "SAT", "metin": f"SMA200 ({sma200:.2f} ₺) altında → uzun vade negatif"})
+
+    if sma50 > 0 and fiyat > sma50:
+        uv += 1; uv_sig.append({"yon": "AL", "metin": f"SMA50 ({sma50:.2f} ₺) üzerinde → orta vade pozitif"})
+    elif sma50 > 0:
+        uv -= 1; uv_sig.append({"yon": "SAT", "metin": f"SMA50 ({sma50:.2f} ₺) altında → orta vade negatif"})
+
+    if adx > 25 and pdi > ndi:
+        uv += 2; uv_sig.append({"yon": "AL", "metin": f"ADX {adx:.0f}, +DI baskın ({pdi:.0f}>{ndi:.0f}) → güçlü alıcı trendi"})
+    elif adx > 25 and ndi > pdi:
+        uv -= 2; uv_sig.append({"yon": "SAT", "metin": f"ADX {adx:.0f}, −DI baskın ({ndi:.0f}>{pdi:.0f}) → güçlü satıcı trendi"})
+    else:
+        uv_sig.append({"yon": "NT", "metin": f"ADX {adx:.0f} → Trend zayıf/yatay, bekleme modunda"})
+
+    uv += int(round(bs * 3))
+
+    if uv >= 4:    uv_k = "UZUN VADEDE TUT"
+    elif uv >= 2:  uv_k = "POZİTİF GÖRÜNÜM"
+    elif uv >= 0:  uv_k = "NÖTR"
+    elif uv >= -2: uv_k = "TEMKİNLİ"
+    else:          uv_k = "RİSKLİ"
+
+    return {
+        "kisa": {"karar": kv_k, "puan": kv, "pozitif": kv >= 0, "sinyaller": kv_sig[:4]},
+        "uzun": {"karar": uv_k, "puan": uv, "pozitif": uv >= 0, "sinyaller": uv_sig[:4]},
+    }
+
+
 def duygu_analizi(sembol: str, sirket: str, df: pd.DataFrame) -> dict:
     haberler = []
     try: haberler = gnews_cek(sembol, sirket)
@@ -1524,6 +1603,9 @@ def hisse_analiz(sembol: str) -> dict:
     # Kelly pozisyon önerisi
     kelly = kelly_criterion(ml.get("olasilik",{}), ro)
 
+    # Kısa/uzun vade analizi
+    vade = _kisa_uzun_vade(tek, bs, ml["ml_sinyal"], son)
+
     # Makro bilgisi
     makro = dict(_makro_cache)
     rejim = piyasa_rejimi(makro.get("bist100",{}).get("seri",[]))
@@ -1564,6 +1646,7 @@ def hisse_analiz(sembol: str) -> dict:
         "kap":      kap,
         "analist":  ana,
         "arima":    arima,
+        "vade":        vade,
         "piyasa_rejimi": rejim,
         "makro": {k: {"ret1d": round(v.get("ret1d",0)*100,2),
                       "ret5d": round(v.get("ret5d",0)*100,2)}
@@ -1864,6 +1947,99 @@ def api_durum():
 # ══════════════════════════════════════════════════════════════════════════════
 #  BÖLÜM 17: BAŞLANGIÇ
 # ══════════════════════════════════════════════════════════════════════════════
+
+@app.route("/api/ai/trader_yorum/<sembol>")
+def ai_trader_yorum(sembol):
+    sembol = sembol.upper()
+    with _cache_lock:
+        cached = _cache.get(sembol, {}).get("sonuc", {})
+    if not cached:
+        return jsonify({"yorum": ""})
+    if not GROQ_API_KEY:
+        return jsonify({"yorum": ""})
+    try:
+        tek    = cached.get("teknik", {})
+        karar  = cached.get("karar", "")
+        bs     = cached.get("birlesik", 0)
+        fiyat  = cached.get("fiyat", 0)
+        hedef  = cached.get("hedef", 0)
+        stop   = cached.get("stop", 0)
+        rsi    = tek.get("rsi", 0)
+        macd   = tek.get("macd", 0)
+        adx    = tek.get("adx", 0)
+        stoch  = tek.get("stoch_k", 0)
+        sma200 = tek.get("sma200", 0)
+        trend  = "SMA200 üzerinde" if sma200 > 0 and fiyat > sma200 else "SMA200 altında"
+        prompt = (
+            f"Sen 50 yıllık BIST traderısın. Cesur, net, pratik konuşursun.\n"
+            f"Hisse: {sembol} | Karar: {karar} | Skor: {bs:+.2f}\n"
+            f"Fiyat: {fiyat:.2f} ₺ → Hedef: {hedef:.2f} ₺ | Stop: {stop:.2f} ₺\n"
+            f"RSI: {rsi:.1f} | MACD: {macd:+.4f} | ADX: {adx:.1f} | Stoch: {stoch:.0f} | {trend}\n"
+            f"Kısa vadede (1-2 hafta) ne yapmalı? Net, 3 cümle max, Türkçe."
+        )
+        body = json.dumps({
+            "model": "llama-3.1-8b-instant",
+            "messages": [{"role": "user", "content": prompt}],
+            "max_tokens": 220, "temperature": 0.5,
+        })
+        req = Request(
+            "https://api.groq.com/openai/v1/chat/completions",
+            data=body.encode(),
+            headers={"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"},
+        )
+        with urlopen(req, timeout=12) as r:
+            yorum = json.loads(r.read().decode())["choices"][0]["message"]["content"].strip()
+        return jsonify({"yorum": yorum})
+    except Exception as e:
+        return jsonify({"yorum": ""})
+
+
+@app.route("/api/ai/sohbet", methods=["POST"])
+def ai_sohbet():
+    data   = request.get_json(force=True) or {}
+    sembol = data.get("sembol", "").upper()
+    soru   = (data.get("soru") or "").strip()
+    if not soru:
+        return jsonify({"cevap": "Soru boş."})
+    if not GROQ_API_KEY:
+        return jsonify({"cevap": "Groq API anahtarı yapılandırılmamış. Render.com'da GROQ_API_KEY ortam değişkeni ekleyin."})
+    with _cache_lock:
+        cached = _cache.get(sembol, {}).get("sonuc", {})
+    tek    = cached.get("teknik", {})
+    karar  = cached.get("karar", "analiz yok")
+    fiyat  = cached.get("fiyat", "?")
+    bs     = cached.get("birlesik", 0)
+    hedef  = cached.get("hedef", "?")
+    stop   = cached.get("stop", "?")
+    rsi    = tek.get("rsi", "?")
+    adx    = tek.get("adx", "?")
+    sistem = (
+        f"Sen 50 yıllık deneyimli bir BIST traderısın. Pratik, cesur ve net tavsiyeler verirsin. "
+        f"Kullanıcı {sembol} hissesini soruyor. Veriler:\n"
+        f"- Sinyal: {karar} (Skor: {bs:+.2f}) | Fiyat: {fiyat} ₺ | Hedef: {hedef} ₺ | Stop: {stop} ₺\n"
+        f"- RSI: {rsi} | ADX: {adx}\n"
+        f"Türkçe, max 4 cümle. Net ve pratik."
+    )
+    try:
+        body = json.dumps({
+            "model": "llama-3.1-8b-instant",
+            "messages": [
+                {"role": "system", "content": sistem},
+                {"role": "user", "content": soru},
+            ],
+            "max_tokens": 280, "temperature": 0.6,
+        })
+        req = Request(
+            "https://api.groq.com/openai/v1/chat/completions",
+            data=body.encode(),
+            headers={"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"},
+        )
+        with urlopen(req, timeout=15) as r:
+            cevap = json.loads(r.read().decode())["choices"][0]["message"]["content"].strip()
+        return jsonify({"cevap": cevap})
+    except Exception as e:
+        return jsonify({"cevap": f"Bağlantı hatası: {str(e)[:60]}"})
+
 
 @app.route("/api/ping")
 def api_ping():
