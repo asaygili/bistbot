@@ -648,7 +648,7 @@ def gnews_cek(sembol: str, sirket: str = "") -> list:
         except: pass
     return haberler[:10]
 
-GROQ_MODEL = "llama-3.1-8b-instant"  # Groq hosted model
+GROQ_MODEL = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile")
 
 def _groq_post(messages: list, max_tokens: int = 280, temperature: float = 0.6) -> str:
     """Central Groq API call using requests library."""
