@@ -648,25 +648,28 @@ def gnews_cek(sembol: str, sirket: str = "") -> list:
         except: pass
     return haberler[:10]
 
+GROQ_MODEL = "llama3-8b-8192"  # stable Groq model
+
+def _groq_post(messages: list, max_tokens: int = 280, temperature: float = 0.6) -> str:
+    """Central Groq API call using requests library."""
+    resp = requests.post(
+        "https://api.groq.com/openai/v1/chat/completions",
+        headers={"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"},
+        json={"model": GROQ_MODEL, "messages": messages, "max_tokens": max_tokens, "temperature": temperature},
+        timeout=15,
+    )
+    resp.raise_for_status()
+    return resp.json()["choices"][0]["message"]["content"].strip()
+
 def _groq_ozet(haberler: list, sembol: str) -> str:
     """Groq LLM ile Türkçe haber özeti (GROQ_API_KEY yoksa boş string döner)."""
     if not GROQ_API_KEY or not haberler:
         return ""
     try:
         headlines = "\n".join(f"- {h['baslik']}" for h in haberler[:6])
-        body = json.dumps({
-            "model": "llama-3.1-8b-instant",
-            "messages": [{"role": "user", "content":
-                f"BIST hissesi {sembol} için aşağıdaki haberleri analiz et ve 1-2 cümleyle piyasa duygu özeti yaz (Türkçe, kısa):\n{headlines}"}],
-            "max_tokens": 120, "temperature": 0.3,
-        })
-        req = Request(
-            "https://api.groq.com/openai/v1/chat/completions",
-            data=body.encode(),
-            headers={"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"},
-        )
-        with urlopen(req, timeout=6) as r:
-            return json.loads(r.read().decode())["choices"][0]["message"]["content"].strip()
+        return _groq_post([{"role": "user", "content":
+            f"BIST hissesi {sembol} için aşağıdaki haberleri analiz et ve 1-2 cümleyle piyasa duygu özeti yaz (Türkçe, kısa):\n{headlines}"}],
+            max_tokens=120, temperature=0.3)
     except:
         return ""
 
@@ -2004,18 +2007,7 @@ def ai_trader_yorum(sembol):
             f"RSI: {rsi:.1f} | MACD: {macd:+.4f} | ADX: {adx:.1f} | Stoch: {stoch:.0f} | {trend}\n"
             f"Kısa vadede (1-2 hafta) ne yapmalı? Net, 3 cümle max, Türkçe."
         )
-        body = json.dumps({
-            "model": "llama-3.1-8b-instant",
-            "messages": [{"role": "user", "content": prompt}],
-            "max_tokens": 220, "temperature": 0.5,
-        })
-        req = Request(
-            "https://api.groq.com/openai/v1/chat/completions",
-            data=body.encode(),
-            headers={"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"},
-        )
-        with urlopen(req, timeout=12) as r:
-            yorum = json.loads(r.read().decode())["choices"][0]["message"]["content"].strip()
+        yorum = _groq_post([{"role": "user", "content": prompt}], max_tokens=220, temperature=0.5)
         return jsonify({"yorum": yorum})
     except Exception as e:
         return jsonify({"yorum": ""})
@@ -2048,24 +2040,20 @@ def ai_sohbet():
         f"Türkçe, max 4 cümle. Net ve pratik."
     )
     try:
-        body = json.dumps({
-            "model": "llama-3.1-8b-instant",
-            "messages": [
-                {"role": "system", "content": sistem},
-                {"role": "user", "content": soru},
-            ],
-            "max_tokens": 280, "temperature": 0.6,
-        })
-        req = Request(
-            "https://api.groq.com/openai/v1/chat/completions",
-            data=body.encode(),
-            headers={"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"},
-        )
-        with urlopen(req, timeout=15) as r:
-            cevap = json.loads(r.read().decode())["choices"][0]["message"]["content"].strip()
+        cevap = _groq_post([
+            {"role": "system", "content": sistem},
+            {"role": "user", "content": soru},
+        ], max_tokens=280, temperature=0.6)
         return jsonify({"cevap": cevap})
     except Exception as e:
-        return jsonify({"cevap": f"Bağlantı hatası: {str(e)[:60]}"})
+        err = str(e)
+        if "401" in err:
+            return jsonify({"cevap": "Groq API anahtarı geçersiz. Render.com Environment'tan GROQ_API_KEY değerini kontrol edin."})
+        if "403" in err:
+            return jsonify({"cevap": "Groq erişim reddetti (403). API anahtarı geçerli mi? console.groq.com'dan kontrol edin."})
+        if "429" in err:
+            return jsonify({"cevap": "Groq istek limiti doldu, biraz bekleyip tekrar deneyin."})
+        return jsonify({"cevap": f"Bağlantı hatası: {err[:80]}"})
 
 
 @app.route("/api/ping")
