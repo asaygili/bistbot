@@ -664,7 +664,7 @@ def _llm_post(messages: list, max_tokens: int = 280, temperature: float = 0.6) -
         }
         if sys_parts:
             body["system_instruction"] = {"parts": sys_parts}
-        gemini_model = os.environ.get("GEMINI_MODEL", "gemini-2.0-flash-lite")
+        gemini_model = os.environ.get("GEMINI_MODEL", "gemini-3.5-flash-lite")
         resp = requests.post(
             f"https://generativelanguage.googleapis.com/v1beta/models/{gemini_model}:generateContent?key={GEMINI_API_KEY}",
             json=body, timeout=15,
