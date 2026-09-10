@@ -19,7 +19,7 @@ Ek:
 """
 
 # ── Imports ───────────────────────────────────────────────────────────────────
-import os, sys, time, json, math, hashlib, threading, warnings
+import os, sys, time, json, math, hashlib, threading, warnings, re
 from pathlib import Path
 from datetime import datetime, timedelta
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -76,7 +76,10 @@ def yf_ticker(sym: str):
 
 # ── App ───────────────────────────────────────────────────────────────────────
 app = Flask(__name__)
-CORS(app, resources={r'/api/*': {'origins': '*'}})
+
+# CORS: production'da gerçek domain listesi kullanılmalı.
+_ALLOWED_ORIGINS = os.environ.get("ALLOWED_ORIGINS", "*").split(",")
+CORS(app, resources={r'/api/*': {'origins': _ALLOWED_ORIGINS}})
 
 # ── Paths & Constants ─────────────────────────────────────────────────────────
 BASE_DIR       = Path(__file__).parent
@@ -108,6 +111,14 @@ W = {
 GROQ_API_KEY    = os.environ.get("GROQ_API_KEY", "")
 GEMINI_API_KEY  = os.environ.get("GEMINI_API_KEY", "")
 AI_KEY          = GEMINI_API_KEY or GROQ_API_KEY  # Gemini öncelikli
+
+# API anahtarı — write endpoint'lerini korumak için (opsiyonel)
+API_SECRET      = os.environ.get("API_SECRET", "")
+
+_VALID_SEMBOL   = re.compile(r'^[A-Z0-9]{2,12}$')
+
+def _sembol_gecerli(sembol: str) -> bool:
+    return bool(_VALID_SEMBOL.match(sembol))
 
 # ── Fiyat düzeltme çarpanları ─────────────────────────────────────────────────
 FIYAT_DUZELTME = {
@@ -1756,7 +1767,10 @@ def index():
 # ── Hisse analizi ─────────────────────────────────────────────────────────────
 @app.route("/api/analiz/<sembol>")
 def api_analiz(sembol):
-    return jsonify(hisse_analiz(sembol.upper()))
+    s = sembol.upper()
+    if not _sembol_gecerli(s):
+        return jsonify({"hata": "Geçersiz sembol"}), 400
+    return jsonify(hisse_analiz(s))
 
 @app.route("/api/toplu")
 def api_toplu():
@@ -1764,14 +1778,18 @@ def api_toplu():
     liste_str = request.args.get("liste", "")
 
     if liste_str:
-        hisseler = [h.strip().upper() for h in liste_str.split(",") if h.strip()]
+        hisseler = [h.strip().upper() for h in liste_str.split(",")
+                    if h.strip() and _sembol_gecerli(h.strip().upper())]
     elif preset == "bist30":   hisseler = BIST30
     elif preset == "bist50":   hisseler = BIST50
     elif preset == "bist100":  hisseler = list(dict.fromkeys(BIST50 + BIST100_EK))
     elif preset == "yildiz":   hisseler = YILDIZ_PAZAR
     else:                      hisseler = VARSAYILAN
 
-    maks = int(request.args.get("maks", 50))
+    try:
+        maks = max(1, min(int(request.args.get("maks", 50)), 100))
+    except (ValueError, TypeError):
+        maks = 50
     hisseler = hisseler[:maks]
 
     sonuclar = {}
@@ -1800,7 +1818,10 @@ def api_liste():
 # ── KAP ──────────────────────────────────────────────────────────────────────
 @app.route("/api/kap/<sembol>")
 def api_kap(sembol):
-    return jsonify(kap_analiz(sembol.upper()))
+    s = sembol.upper()
+    if not _sembol_gecerli(s):
+        return jsonify({"hata": "Geçersiz sembol"}), 400
+    return jsonify(kap_analiz(s))
 
 # ── ML Model ─────────────────────────────────────────────────────────────────
 @app.route("/api/ml/durum")
@@ -1815,7 +1836,7 @@ def api_ml_durum():
         "egitim_tarihi":  m.egitim_tarihi,
         "ornek_sayisi":   m.ornek_sayisi,
         "ozellik_sayisi": len(m.cols_secili),
-        "dosya":          str(MODEL_PATH),
+        "dosya":          "bist_modeller/evrensel_model.joblib",
         "hedef_gun":      m.hedef_gun,
         "esik":           m.esik,
         "metrikler":      m.metrikler,
@@ -1830,8 +1851,17 @@ def api_ml_durum():
         "hedef_aciklama": f"{m.hedef_gun} günlük yön tahmini (±%{m.esik*100:.1f} eşiği)",
     })
 
+def _api_secret_ok() -> bool:
+    """API_SECRET ayarlıysa Authorization header ile doğrula."""
+    if not API_SECRET:
+        return True
+    auth = request.headers.get("Authorization", "")
+    return auth == f"Bearer {API_SECRET}"
+
 @app.route("/api/ml/egit", methods=["POST"])
 def api_ml_egit():
+    if not _api_secret_ok():
+        return jsonify({"hata": "Yetkisiz"}), 401
     def bg():
         try:
             makro_guncelle()
@@ -1844,21 +1874,27 @@ def api_ml_egit():
 # ── Backtest ──────────────────────────────────────────────────────────────────
 @app.route("/api/backtest/<sembol>")
 def api_backtest(sembol):
+    s = sembol.upper()
+    if not _sembol_gecerli(s):
+        return jsonify({"hata": "Geçersiz sembol"}), 400
     try:
-        ticker = yf_ticker(f"{sembol.upper()}.IS")
+        ticker = yf_ticker(f"{s}.IS")
         df = ticker.history(period="3y")
         if df.empty:
             return jsonify({"hata": "Veri yok"})
         df.columns = [c[0] if isinstance(c, tuple) else c for c in df.columns]
-        sonuc = walk_forward_backtest(df, sembol.upper())
+        sonuc = walk_forward_backtest(df, s)
         return jsonify(sonuc)
-    except Exception as e:
-        return jsonify({"hata": str(e)})
+    except Exception:
+        return jsonify({"hata": "Backtest hesaplanamadı"}), 500
 
 # ── Kelly Criterion ───────────────────────────────────────────────────────────
 @app.route("/api/kelly/<sembol>")
 def api_kelly(sembol):
-    sonuc = hisse_analiz(sembol.upper())
+    s = sembol.upper()
+    if not _sembol_gecerli(s):
+        return jsonify({"hata": "Geçersiz sembol"}), 400
+    sonuc = hisse_analiz(s)
     if "hata" in sonuc:
         return jsonify(sonuc)
     kelly = sonuc.get("kelly", {})
@@ -1928,14 +1964,17 @@ def api_chart(sembol):
 # ── ARIMA ─────────────────────────────────────────────────────────────────────
 @app.route("/api/arima/<sembol>")
 def api_arima(sembol):
+    s = sembol.upper()
+    if not _sembol_gecerli(s):
+        return jsonify({"hata": "Geçersiz sembol"}), 400
     try:
-        ticker = yf_ticker(f"{sembol.upper()}.IS")
+        ticker = yf_ticker(f"{s}.IS")
         df = ticker.history(period="1y")
         if df.empty: return jsonify({"hata": "Veri yok"})
         df.columns = [c[0] if isinstance(c, tuple) else c for c in df.columns]
         return jsonify(arima_trend(df, ML_HEDEF_GUN))
-    except Exception as e:
-        return jsonify({"hata": str(e)})
+    except Exception:
+        return jsonify({"hata": "ARIMA hesaplanamadı"}), 500
 
 # ── Makro ─────────────────────────────────────────────────────────────────────
 @app.route("/api/makro")
@@ -1949,25 +1988,52 @@ def api_makro():
 def api_portfolyo_get():
     return jsonify(portfolyo_yukle())
 
+def _portfolyo_giris_temizle(kayit: dict) -> dict | None:
+    """Portföy kaydını doğrula ve sadece izin verilen alanları al."""
+    sembol = str(kayit.get("sembol", "")).strip().upper()
+    if not _sembol_gecerli(sembol):
+        return None
+    try:
+        adet  = float(kayit.get("adet", 0))
+        maliyet = float(kayit.get("maliyet", 0))
+    except (TypeError, ValueError):
+        return None
+    if adet < 0 or maliyet < 0:
+        return None
+    return {"sembol": sembol, "adet": adet, "maliyet": maliyet}
+
 @app.route("/api/portfolyo", methods=["POST"])
 def api_portfolyo_post():
-    portfolyo_kaydet(request.json or [])
+    if not _api_secret_ok():
+        return jsonify({"hata": "Yetkisiz"}), 401
+    data = request.json
+    if not isinstance(data, list):
+        return jsonify({"hata": "Liste bekleniyor"}), 400
+    temiz = [r for r in (_portfolyo_giris_temizle(x) for x in data) if r]
+    portfolyo_kaydet(temiz)
     return jsonify({"ok": True})
 
 @app.route("/api/portfolyo/ekle", methods=["POST"])
 def api_portfolyo_ekle():
+    if not _api_secret_ok():
+        return jsonify({"hata": "Yetkisiz"}), 401
+    yeni = _portfolyo_giris_temizle(request.json or {})
+    if not yeni:
+        return jsonify({"hata": "Geçersiz veri"}), 400
     p = portfolyo_yukle()
-    yeni = request.json or {}
-    if yeni.get("sembol"):
-        # Zaten varsa güncelle
-        p = [x for x in p if x.get("sembol") != yeni["sembol"]]
-        p.append(yeni)
-        portfolyo_kaydet(p)
+    p = [x for x in p if x.get("sembol") != yeni["sembol"]]
+    p.append(yeni)
+    portfolyo_kaydet(p)
     return jsonify({"ok": True, "toplam": len(p)})
 
 @app.route("/api/portfolyo/sil/<sembol>", methods=["DELETE"])
 def api_portfolyo_sil(sembol):
-    p = [x for x in portfolyo_yukle() if x.get("sembol") != sembol.upper()]
+    if not _api_secret_ok():
+        return jsonify({"hata": "Yetkisiz"}), 401
+    s = sembol.upper()
+    if not _sembol_gecerli(s):
+        return jsonify({"hata": "Geçersiz sembol"}), 400
+    p = [x for x in portfolyo_yukle() if x.get("sembol") != s]
     portfolyo_kaydet(p)
     return jsonify({"ok": True})
 
@@ -1981,6 +2047,8 @@ def api_sinyal_gecmisi():
 # ── Cache ─────────────────────────────────────────────────────────────────────
 @app.route("/api/cache/temizle", methods=["POST"])
 def api_cache_temizle():
+    if not _api_secret_ok():
+        return jsonify({"hata": "Yetkisiz"}), 401
     with _cache_lock: _cache.clear()
     with _kap_lock:   _kap_cache.clear()
     return jsonify({"ok": True})
@@ -2040,12 +2108,16 @@ def ai_trader_yorum(sembol):
 @app.route("/api/ai/sohbet", methods=["POST"])
 def ai_sohbet():
     data   = request.get_json(force=True) or {}
-    sembol = data.get("sembol", "").upper()
+    sembol = data.get("sembol", "").strip().upper()
     soru   = (data.get("soru") or "").strip()
     if not soru:
         return jsonify({"cevap": "Soru boş."})
+    if len(soru) > 500:
+        return jsonify({"cevap": "Soru çok uzun (max 500 karakter)."}), 400
+    if sembol and not _sembol_gecerli(sembol):
+        return jsonify({"cevap": "Geçersiz sembol."}), 400
     if not AI_KEY:
-        return jsonify({"cevap": "AI anahtarı yapılandırılmamış. Render.com'da GEMINI_API_KEY veya GROQ_API_KEY ekleyin."})
+        return jsonify({"cevap": "AI anahtarı yapılandırılmamış."})
     with _cache_lock:
         cached = _cache.get(sembol, {}).get("sonuc", {})
     tek    = cached.get("teknik", {})
@@ -2056,12 +2128,12 @@ def ai_sohbet():
     stop   = cached.get("stop", "?")
     rsi    = tek.get("rsi", "?")
     adx    = tek.get("adx", "?")
+    # Sistem prompt'u yalnızca kontrollü verilerden oluşturulur; soru user role'de kalır.
     sistem = (
-        f"Sen 50 yıllık deneyimli bir BIST traderısın. Pratik, cesur ve net tavsiyeler verirsin. "
-        f"Kullanıcı {sembol} hissesini soruyor. Veriler:\n"
-        f"- Sinyal: {karar} (Skor: {bs:+.2f}) | Fiyat: {fiyat} ₺ | Hedef: {hedef} ₺ | Stop: {stop} ₺\n"
-        f"- RSI: {rsi} | ADX: {adx}\n"
-        f"Türkçe, max 4 cümle. Net ve pratik."
+        "Sen 50 yıllık deneyimli bir BIST traderısın. Pratik, cesur ve net tavsiyeler verirsin. "
+        f"Hisse: {sembol or 'Belirtilmedi'} | Sinyal: {karar} | Skor: {bs:+.2f} | "
+        f"Fiyat: {fiyat} ₺ | Hedef: {hedef} ₺ | Stop: {stop} ₺ | RSI: {rsi} | ADX: {adx}. "
+        "Türkçe, max 4 cümle. Net ve pratik."
     )
     try:
         cevap = _llm_post([
@@ -2073,7 +2145,7 @@ def ai_sohbet():
         err = str(e)
         if "429" in err:
             return jsonify({"cevap": "İstek limiti doldu, biraz bekleyip tekrar deneyin."})
-        return jsonify({"cevap": f"Hata: {err[:200]}"})
+        return jsonify({"cevap": "AI yanıtı alınamadı."})
 
 
 @app.route("/api/ping")
