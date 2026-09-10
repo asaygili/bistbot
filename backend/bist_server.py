@@ -648,7 +648,7 @@ def gnews_cek(sembol: str, sirket: str = "") -> list:
         except: pass
     return haberler[:10]
 
-GROQ_MODEL = "llama3-8b-8192"  # stable Groq model
+GROQ_MODEL = "llama-3.1-8b-instant"  # Groq hosted model
 
 def _groq_post(messages: list, max_tokens: int = 280, temperature: float = 0.6) -> str:
     """Central Groq API call using requests library."""
@@ -2053,7 +2053,9 @@ def ai_sohbet():
             return jsonify({"cevap": "Groq erişim reddetti (403). API anahtarı geçerli mi? console.groq.com'dan kontrol edin."})
         if "429" in err:
             return jsonify({"cevap": "Groq istek limiti doldu, biraz bekleyip tekrar deneyin."})
-        return jsonify({"cevap": f"Bağlantı hatası: {err[:80]}"})
+        if "400" in err:
+            return jsonify({"cevap": f"Groq model hatası (400). Lütfen bir dakika bekleyip tekrar deneyin."})
+        return jsonify({"cevap": f"Hata: {err[:100]}"})
 
 
 @app.route("/api/ping")
